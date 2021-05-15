@@ -7,11 +7,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/1lann/dissonance/ffmpeg"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -41,20 +43,20 @@ var (
 var pattern = regexp.MustCompile(`(?m)^.*{([-\.0-9]+), ([-\.0-9]+), ([-\.0-9]+)}\s*$`)
 
 func main() {
-	// if len(os.Args) < 2 {
-	// 	fmt.Println("Please specify the name of the input device you want to use in quotes as the second argument.")
-	// 	fmt.Println("Available devices:")
-	// 	devices, err := ffmpeg.GetDshowDevices()
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
+	if len(os.Args) < 2 {
+		fmt.Println("Please specify the name of the input device you want to use in quotes as the second argument.")
+		fmt.Println("Available devices:")
+		devices, err := ffmpeg.GetDshowDevices()
+		if err != nil {
+			panic(err)
+		}
 
-	// 	for _, dev := range devices {
-	// 		fmt.Println(dev)
-	// 	}
+		for _, dev := range devices {
+			fmt.Println(dev)
+		}
 
-	// 	return
-	// }
+		return
+	}
 
 	data, err := ioutil.ReadFile("./crack_leds.txt")
 	if err != nil {
@@ -202,7 +204,7 @@ func main() {
 		}
 	})
 
-	go sys.Run([]Effect{effect, NewLoudnessEffect("Microphone (NVIDIA RTX Voice)", false)})
+	go sys.Run([]Effect{effect, NewLoudnessEffect(os.Args[1], false)})
 
 	log.Fatalln(e.Start(":9000"))
 }

@@ -1,4 +1,4 @@
-module github.com/rickqu/ledsim
+module ledsim
 
 go 1.16
 
