@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"ledsim/effects"
+	"ledsim/internal"
 	"log"
 	"net"
 	"net/http"
@@ -28,7 +30,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	LEDs []*LED `json:"leds"`
+	LEDs []*internal.LED `json:"leds"`
 }
 
 var (
@@ -63,11 +65,11 @@ func main() {
 		panic(err)
 	}
 
-	effect := &DiagonalRainbow{}
+	effect := &effects.DiagonalRainbow{}
 
 	// make a ring of 80 LEDs with radius 1m
-	sys := &System{
-		normalizeOnce: new(sync.Once),
+	sys := &internal.System{
+		NormalizeOnce: new(sync.Once),
 	}
 
 	groups := pattern.FindAllStringSubmatch(string(data), -1)
@@ -76,7 +78,7 @@ func main() {
 		y, _ := strconv.ParseFloat(group[2], 64)
 		z, _ := strconv.ParseFloat(group[3], 64)
 
-		sys.AddLED(&LED{
+		sys.AddLED(&internal.LED{
 			X: -(x - origin[0]) * scale,
 			Y: (y - origin[1]) * scale,
 			Z: (z - origin[2]) * scale,
@@ -112,7 +114,7 @@ func main() {
 		}
 	}()
 
-	sys.AfterFrame(func(s *System, t time.Time) {
+	sys.AfterFrame(func(s *internal.System, t time.Time) {
 		// msg := &Message{
 		// 	LEDs: s.LEDs,
 		// }
@@ -204,7 +206,7 @@ func main() {
 		}
 	})
 
-	go sys.Run([]Effect{effect, NewLoudnessEffect(os.Args[1], false)})
+	go sys.Run([]internal.Effect{effect, effects.NewLoudnessEffect(os.Args[1], false)})
 
 	log.Fatalln(e.Start(":9000"))
 }

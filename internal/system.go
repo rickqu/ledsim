@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"sync"
@@ -25,7 +25,7 @@ type System struct {
 	XStats        *Stats
 	YStats        *Stats
 	ZStats        *Stats
-	normalizeOnce *sync.Once
+	NormalizeOnce *sync.Once
 }
 
 func NewSystem() *System {
@@ -71,7 +71,7 @@ func (s *System) computeStats(getter func(led *LED) float64) *Stats {
 }
 
 func (s *System) normalize() {
-	s.normalizeOnce.Do(func() {
+	s.NormalizeOnce.Do(func() {
 		s.XStats = s.computeStats(func(led *LED) float64 {
 			return led.X
 		})

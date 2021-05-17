@@ -1,7 +1,8 @@
-package main
+package effects
 
 import (
 	"fmt"
+	"ledsim/internal"
 	"sync"
 	"time"
 
@@ -14,7 +15,7 @@ type BasicMicEffect struct {
 	loudness float64 // [0 .. 1]
 }
 
-func (e *BasicMicEffect) Apply(sys *System, t time.Time) {
+func (e *BasicMicEffect) Apply(sys *internal.System, t time.Time) {
 	var loudness float64
 	e.mutex.Lock()
 	loudness = e.loudness

@@ -1,6 +1,7 @@
-package main
+package effects
 
 import (
+	"ledsim/internal"
 	"math"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 type DiagonalRainbow struct {
 }
 
-func (d *DiagonalRainbow) Apply(sys *System, t time.Time) {
+func (d *DiagonalRainbow) Apply(sys *internal.System, t time.Time) {
 	secs := float64(t.UnixNano()) / float64(time.Second) // time.Second represents 1 second in nanoseconds
 
 	for _, led := range sys.LEDs {
