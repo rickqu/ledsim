@@ -60,7 +60,7 @@ func main() {
 		return
 	}
 
-	data, err := ioutil.ReadFile("./crack_leds.txt")
+	data, err := ioutil.ReadFile("./resources/crack_leds.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -163,8 +163,8 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	e.Static("/", "./index.html")
-	e.Static("/script.js", "./script.js")
+	e.Static("/", "./resources/index.html")
+	e.Static("/script.js", "./resources/script.js")
 
 	e.GET("/ws", func(c echo.Context) error {
 		conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
