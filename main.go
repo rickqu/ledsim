@@ -65,7 +65,9 @@ func main() {
 		panic(err)
 	}
 
-	effect := &effects.DiagonalRainbow{}
+	effects := []internal.Effect{
+		effects.NewVolumeAdjust(os.Args[1], false),
+	}
 
 	// make a ring of 80 LEDs with radius 1m
 	sys := &internal.System{
@@ -206,7 +208,7 @@ func main() {
 		}
 	})
 
-	go sys.Run([]internal.Effect{effect, effects.NewLoudnessEffect(os.Args[1], false)})
+	go sys.Run(effects)
 
 	log.Fatalln(e.Start(":9000"))
 }
