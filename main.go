@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"ledsim/effects"
+	"ledsim/internal"
 	"log"
 	"net"
 	"net/http"
@@ -28,7 +30,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	LEDs []*LED `json:"leds"`
+	LEDs []*internal.LED `json:"leds"`
 }
 
 var (
@@ -58,16 +60,18 @@ func main() {
 		return
 	}
 
-	data, err := ioutil.ReadFile("./crack_leds.txt")
+	data, err := ioutil.ReadFile("./resources/crack_leds.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	effect := &DiagonalRainbow{}
+	effects := []internal.Effect{
+		effects.NewVolumeAdjust(os.Args[1], false),
+	}
 
 	// make a ring of 80 LEDs with radius 1m
-	sys := &System{
-		normalizeOnce: new(sync.Once),
+	sys := &internal.System{
+		NormalizeOnce: new(sync.Once),
 	}
 
 	groups := pattern.FindAllStringSubmatch(string(data), -1)
@@ -76,7 +80,7 @@ func main() {
 		y, _ := strconv.ParseFloat(group[2], 64)
 		z, _ := strconv.ParseFloat(group[3], 64)
 
-		sys.AddLED(&LED{
+		sys.AddLED(&internal.LED{
 			X: -(x - origin[0]) * scale,
 			Y: (y - origin[1]) * scale,
 			Z: (z - origin[2]) * scale,
@@ -112,7 +116,7 @@ func main() {
 		}
 	}()
 
-	sys.AfterFrame(func(s *System, t time.Time) {
+	sys.AfterFrame(func(s *internal.System, t time.Time) {
 		// msg := &Message{
 		// 	LEDs: s.LEDs,
 		// }
@@ -161,8 +165,8 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	e.Static("/", "./index.html")
-	e.Static("/script.js", "./script.js")
+	e.Static("/", "./resources/index.html")
+	e.Static("/script.js", "./resources/script.js")
 
 	e.GET("/ws", func(c echo.Context) error {
 		conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -204,7 +208,7 @@ func main() {
 		}
 	})
 
-	go sys.Run([]Effect{effect, NewLoudnessEffect(os.Args[1], false)})
+	go sys.Run(effects)
 
 	log.Fatalln(e.Start(":9000"))
 }

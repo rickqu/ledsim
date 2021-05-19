@@ -1,7 +1,8 @@
-package main
+package effects
 
 import (
 	"fmt"
+	"ledsim/internal"
 	"math"
 	"sync"
 	"time"
@@ -17,7 +18,7 @@ type LoudnessEffect struct {
 	loudness []float64 // [0 .. 1]
 }
 
-func (e *LoudnessEffect) Apply(sys *System, t time.Time) {
+func (e *LoudnessEffect) Apply(sys *internal.System, t time.Time) {
 	for _, led := range sys.LEDs {
 		distance := e.distance(led.X, led.Y)
 		intpart, diff_multiplier := math.Modf(distance * Values)
@@ -43,7 +44,9 @@ func (e *LoudnessEffect) Apply(sys *System, t time.Time) {
 		v = math.Pow(v, 15)
 
 		col := colorful.Color{
-			(float64(led.R) / 255.0) * v, v * (float64(led.G) / 255.0), v * (float64(led.B) / 255.0),
+			R: (float64(led.R) / 255.0) * v,
+			G: (float64(led.G) / 255.0) * v,
+			B: (float64(led.B) / 255.0) * v,
 		}
 
 		led.R, led.G, led.B = col.Clamped().RGB255()
