@@ -61,6 +61,7 @@ func main() {
 	}()
 
 	executor := ledsim.NewExecutor(sys, 20,
+		ledsim.TimingStats{},
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
 				{
