@@ -1,45 +1,46 @@
-package internal
+package ledsim
 
 import (
 	"sync"
-	"time"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
+
+type System struct {
+	LEDs []*LED
+
+	XStats        *Stats
+	YStats        *Stats
+	ZStats        *Stats
+	normalizeOnce *sync.Once
+}
 
 type LED struct {
 	X float64
 	Y float64
 	Z float64
-	R uint8
-	G uint8
-	B uint8
+
+	colorful.Color
 }
 
-func (l *LED) RGB() uint32 {
-	return uint32(l.R)<<16 | uint32(l.G)<<8 | uint32(l.B)
+type Middleware interface {
+	Execute(system *System, next func() error) error
 }
 
-type System struct {
-	LEDs               []*LED
-	afterFrameCallback func(s *System, t time.Time)
+type MiddlewareFunc func(system *System, next func() error) error
 
-	XStats        *Stats
-	YStats        *Stats
-	ZStats        *Stats
-	NormalizeOnce *sync.Once
+func (m MiddlewareFunc) Execute(system *System, next func() error) error {
+	return m(system, next)
 }
 
 func NewSystem() *System {
 	return &System{
-		afterFrameCallback: func(s *System, t time.Time) {},
+		normalizeOnce: new(sync.Once),
 	}
 }
 
 func (s *System) AddLED(led *LED) {
 	s.LEDs = append(s.LEDs, led)
-}
-
-func (s *System) AfterFrame(callback func(s *System, t time.Time)) {
-	s.afterFrameCallback = callback
 }
 
 type Stats struct {
@@ -70,8 +71,8 @@ func (s *System) computeStats(getter func(led *LED) float64) *Stats {
 	}
 }
 
-func (s *System) normalize() {
-	s.NormalizeOnce.Do(func() {
+func (s *System) Normalize() {
+	s.normalizeOnce.Do(func() {
 		s.XStats = s.computeStats(func(led *LED) float64 {
 			return led.X
 		})
@@ -88,18 +89,4 @@ func (s *System) normalize() {
 			led.Z = s.ZStats.Convert(led.Z)
 		}
 	})
-}
-
-func (s *System) Run(effects []Effect) {
-	s.normalize()
-	// main system runtime (20 fps)
-	ticker := time.NewTicker(time.Second / 20)
-	for range ticker.C {
-		now := time.Now()
-		for _, effect := range effects {
-			effect.Apply(s, now)
-		}
-
-		s.afterFrameCallback(s, now)
-	}
 }
