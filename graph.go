@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
@@ -58,14 +59,24 @@ func (g *undirectedGraph) removeVertex(X float64, Y float64, Z float64) {
 	}
 }
 
-// get vertex from the vertex list by coordinate as 3d coordinates are unique
+func getDistance(x0 float64, y0 float64, z0 float64, x1 float64, y1 float64, z1 float64) float64 {
+	return math.Sqrt(math.Pow(x1-x0, 2) + math.Pow(y1-y0, 2) + math.Pow(z1-z0, 2))
+}
+
 func (g *undirectedGraph) getVertexByCoord(X float64, Y float64, Z float64) *LED {
+	min_dist := 10000.0
+	var curr_vertex *LED
 	for _, v := range g.vertices {
-		if v.X == X && v.Y == Y && v.Z == Z {
-			return v
+		dist := getDistance(X, Y, Z, v.X, v.Y, v.Z)
+		if dist < min_dist {
+			min_dist = dist
+			curr_vertex = v
 		}
 	}
-	return nil
+	if curr_vertex == nil {
+		panic("get vertex by coord failed")
+	}
+	return curr_vertex
 }
 
 func (g *undirectedGraph) removeEdge(x0 float64, y0 float64, z0 float64, x1 float64, y1 float64, z1 float64) {
@@ -129,11 +140,11 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 				Z, _ := strconv.ParseFloat(coords[2][0], 64)
 
 				led := &LED{
-					X: -X,
-					Y: Y,
-					Z: Z,
+					X:       X,
+					Y:       Y,
+					Z:       Z,
+					RawLine: ledposScanner.Text(),
 				}
-				rawLEDMapping[[3]float64{X, Y, Z}] = led
 
 				sys.AddLED(led)
 
@@ -153,7 +164,7 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 			X1, _ := strconv.ParseFloat(pairs[3][0], 64)
 			Y1, _ := strconv.ParseFloat(pairs[4][0], 64)
 			Z1, _ := strconv.ParseFloat(pairs[5][0], 64)
-			g.addEdge(getRawLED(X0, Y0, Z0), getRawLED(X1, Y1, Z1))
+			g.addEdge(g.getVertexByCoord(X0, Y0, Z0), g.getVertexByCoord(X1, Y1, Z1))
 		}
 	}
 

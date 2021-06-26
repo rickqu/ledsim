@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"ledsim"
+	"ledsim/effects"
 	"ledsim/outputs"
 	"log"
 	"os"
@@ -36,7 +37,7 @@ func main() {
 		log.Fatalln(e.Start(":9000"))
 	}()
 
-	executor := ledsim.NewExecutor(sys, 20,
+	executor := ledsim.NewExecutor(sys, 60,
 		// ledsim.TimingStats{},
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
@@ -45,9 +46,59 @@ func main() {
 					Offset:   0,                   // start at 0 seconds
 					Duration: time.Second * 10000, // end at 10 seconds
 					Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-						led.Color = colorful.Color{led.X, led.Y, led.Z} // just make all LEDs white
+						led.Color = colorful.Color{0, 0, 0} // just make all LEDs white
 					}),
 				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    1,
+				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    2,
+				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    3,
+				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    1,
+				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    2,
+				},
+				{
+					Label:    "snake effect",
+					Offset:   0,
+					Duration: time.Hour,
+					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
+					Layer:    3,
+				},
+				// {
+				// 	Label:    "display white for 10 seconds as background layer",
+				// 	Offset:   0,                   // start at 0 seconds
+				// 	Duration: time.Second * 10000, // end at 10 seconds
+				// 	Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
+				// 		led.Color = colorful.Color{led.X, led.Y, led.Z} // just make all LEDs white
+				// 	}),
+				// },
 				// {
 				// 	Label:    "flash blue 10 times as foreground layer",
 				// 	Offset:   0,                // start at 0 seconds

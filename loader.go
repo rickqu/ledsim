@@ -5,12 +5,6 @@ import (
 	"fmt"
 )
 
-var rawLEDMapping = make(map[[3]float64]*LED)
-
-func getRawLED(x, y, z float64) *LED {
-	return rawLEDMapping[[3]float64{x, y, z}]
-}
-
 func LoadLEDs(sys *System) {
 	// var (
 	// 	scale  = 0.0005 * 2.056422

@@ -16,9 +16,11 @@ type System struct {
 }
 
 type LED struct {
-	X float64
-	Y float64
-	Z float64
+	ID      int
+	X       float64
+	Y       float64
+	Z       float64
+	RawLine string
 
 	colorful.Color
 
@@ -42,6 +44,7 @@ func NewSystem() *System {
 }
 
 func (s *System) AddLED(led *LED) {
+	led.ID = len(s.LEDs)
 	s.LEDs = append(s.LEDs, led)
 }
 
@@ -74,6 +77,10 @@ func (s *System) computeStats(getter func(led *LED) float64) *Stats {
 }
 
 func (s *System) Normalize() {
+	for _, led := range s.LEDs {
+		led.X = -led.X
+	}
+
 	s.normalizeOnce.Do(func() {
 		s.XStats = s.computeStats(func(led *LED) float64 {
 			return led.X
