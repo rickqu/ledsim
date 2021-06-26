@@ -1,6 +1,9 @@
 package ledsim
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Executor struct {
 	system     *System
@@ -16,12 +19,20 @@ func NewExecutor(system *System, frameRate int, middleware ...Middleware) *Execu
 	}
 }
 
-func (e *Executor) Run() error {
+func (e *Executor) Run(ctx context.Context) error {
 	t := time.NewTicker(time.Second / time.Duration(e.frameRate))
 	for range t.C {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
 		err := e.RunMiddleware(0)
 		if err != nil {
 			return err
+		}
+
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 	}
 

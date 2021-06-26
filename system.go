@@ -21,6 +21,8 @@ type LED struct {
 	Z float64
 
 	colorful.Color
+
+	Neighbours []*LED
 }
 
 type Middleware interface {
