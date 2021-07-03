@@ -1,34 +1,24 @@
+//+build ignore
+
 package effects
 
 import (
 	"ledsim"
 	"math"
-	"time"
-
 	"math/rand"
+	"time"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-type Snake struct {
-	curMove int
-	snake   []*ledsim.LED
-	dur     time.Duration
-	speed   float64
-	col     colorful.Color
+type Jitter struct {
 }
 
-// speed is in LEDs per second
-func NewSnake(dur time.Duration, speed float64, col colorful.Color, tailLength int) *Snake {
-	return &Snake{
-		snake: make([]*ledsim.LED, tailLength),
-		dur:   dur,
-		speed: speed,
-		col:   col,
-	}
+func NewJitter(dur time.Duration, speed float64, jitterUpdateRate float64, palette []colorful.Color) *Jitter {
+
 }
 
-func (s *Snake) OnEnter(sys *ledsim.System) {
+func (j *Jitter) OnEnter(sys *ledsim.System) {
 	// pick a random LED to start from
 	start := sys.LEDs[rand.Intn(len(sys.LEDs))]
 
@@ -36,7 +26,7 @@ func (s *Snake) OnEnter(sys *ledsim.System) {
 	s.populate(sys, start, 1, nil)
 }
 
-func (s *Snake) populate(sys *ledsim.System, current *ledsim.LED, pos int, from *ledsim.LED) bool {
+func (j *Jitter) populate(sys *ledsim.System, current *ledsim.LED, pos int, from *ledsim.LED) bool {
 	for _, near := range current.Neighbours {
 		if near == from {
 			continue
@@ -55,7 +45,7 @@ func (s *Snake) populate(sys *ledsim.System, current *ledsim.LED, pos int, from 
 	return false
 }
 
-func (s *Snake) step(sys *ledsim.System) bool {
+func (j *Jitter) step(sys *ledsim.System) bool {
 	current := s.snake[len(s.snake)-1]
 	for attempts := 0; attempts < 100; attempts++ {
 		near := current.Neighbours[rand.Intn(len(current.Neighbours))]
@@ -76,7 +66,7 @@ func (s *Snake) step(sys *ledsim.System) bool {
 	return false
 }
 
-func (s *Snake) Eval(progress float64, sys *ledsim.System) {
+func (j *Jitter) Eval(progress float64, sys *ledsim.System) {
 	movement := ((progress * float64(s.dur)) / float64(time.Second)) * s.speed
 
 	// move the snake
@@ -111,8 +101,8 @@ func (s *Snake) Eval(progress float64, sys *ledsim.System) {
 	}
 }
 
-func (s *Snake) OnExit(sys *ledsim.System) {
+func (j *Jitter) OnExit(sys *ledsim.System) {
 
 }
 
-var _ ledsim.Effect = (*Snake)(nil)
+var _ ledsim.Effect = (*Jitter)(nil)

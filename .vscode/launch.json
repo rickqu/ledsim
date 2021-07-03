@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [{
+        "name": "Launch Go program",
+        "type": "go",
+        "request": "launch",
+        "program": "${workspaceRoot}/cmd/main/main.go",
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen"
+    }, {
+        "name": "Launch Go program with debug",
+        "type": "go",
+        "request": "launch",
+        "program": "${workspaceRoot}/cmd/main/main.go",
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen",
+        "debugServer": "local",
+        "sourceMaps": true,
+        "dlvFlags": ["--check-go-version=false"]
+    }]
+}

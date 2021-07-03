@@ -1,6 +1,8 @@
 package ledsim
 
 import (
+	"log"
+	"runtime/debug"
 	"sort"
 	"time"
 )
@@ -24,6 +26,7 @@ func (k *Keyframe) EndOffset() time.Duration {
 type EffectsManager struct {
 	keyframeBuckets [][]*Keyframe // each bucket is 1 second
 	lastKeyframes   []*Keyframe
+	blacklist       map[*Keyframe]bool
 }
 
 func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
@@ -67,6 +70,7 @@ func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
 	return &EffectsManager{
 		keyframeBuckets: keyframeBuckets,
 		lastKeyframes:   []*Keyframe{},
+		blacklist:       make(map[*Keyframe]bool),
 	}
 }
 
@@ -92,31 +96,70 @@ func (r *EffectsManager) Evaluate(system *System, start time.Time, now time.Time
 	currentKeyframes := make([]*Keyframe, 0, len(bucket))
 
 	for _, keyframe := range bucket {
-		if delta >= keyframe.Offset && delta < keyframe.EndOffset() {
+		if delta >= keyframe.Offset && delta < keyframe.EndOffset() && !r.blacklist[keyframe] {
 			currentKeyframes = append(currentKeyframes, keyframe)
 		}
 	}
 
 	for _, lastKeyframe := range r.lastKeyframes {
-		if !isKeyframeIn(lastKeyframe, currentKeyframes) {
+		if !isKeyframeIn(lastKeyframe, currentKeyframes) && !r.blacklist[lastKeyframe] {
 			// exiting keyframe
-			lastKeyframe.Effect.OnExit(system)
+			func() {
+				defer func() {
+					if rec := recover(); rec != nil {
+						// get stack trace
+						log.Printf("warn: panic OnExit with effect %q: %v\n%s",
+							lastKeyframe.Label, rec, string(debug.Stack()))
+					}
+				}()
+				lastKeyframe.Effect.OnExit(system)
+			}()
 		}
 	}
 
 	for _, keyframe := range currentKeyframes {
+		if r.blacklist[keyframe] {
+			continue
+		}
+
 		if !isKeyframeIn(keyframe, r.lastKeyframes) {
 			// entering keyframe
-			keyframe.Effect.OnEnter(system)
+			func() {
+				defer func() {
+					if rec := recover(); rec != nil {
+						log.Printf("warn: panic OnEnter with effect %q: %v\n%s",
+							keyframe.Label, rec, string(debug.Stack()))
+						log.Printf("warn: %q will be blacklisted", keyframe.Label)
+						r.blacklist[keyframe] = true
+					}
+				}()
+
+				keyframe.Effect.OnEnter(system)
+			}()
 		}
 	}
 
 	r.lastKeyframes = currentKeyframes
 
 	for _, keyframe := range currentKeyframes {
+		if r.blacklist[keyframe] {
+			continue
+		}
+
 		progress := float64(delta-keyframe.Offset) / float64(keyframe.Duration)
 
-		keyframe.Effect.Eval(progress, system)
+		func() {
+			defer func() {
+				if rec := recover(); rec != nil {
+					log.Printf("warn: panic Eval with effect %q: %v\n%s",
+						keyframe.Label, rec, string(debug.Stack()))
+					log.Printf("warn: %q will be blacklisted", keyframe.Label)
+					r.blacklist[keyframe] = true
+				}
+			}()
+
+			keyframe.Effect.Eval(progress, system)
+		}()
 	}
 }
 

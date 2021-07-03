@@ -74,7 +74,7 @@ func (w *blendingWrapper) OnExit(system *System) {
 func (w *blendingWrapper) Eval(progress float64, system *System) {
 	for _, led := range system.LEDs {
 		c, blend := w.effect.BlendEval(progress, led)
-		led.Color = w.blending(led.Color, c, blend)
+		led.Color = w.blending(led.Color, c, blend).Clamped()
 	}
 }
 
@@ -134,7 +134,7 @@ func (e WrappedEffect) WithRepetition(count int, reverse ...bool) WrappedEffect 
 	if len(reverse) > 0 && reverse[0] {
 		return WrappedEffect{&repetitionWrapper{
 			effect: Sequential(e, e.Reverse()),
-			count:  count * 2,
+			count:  count,
 		}}
 	}
 

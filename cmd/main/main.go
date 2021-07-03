@@ -37,60 +37,108 @@ func main() {
 		log.Fatalln(e.Start(":9000"))
 	}()
 
+	golds := []colorful.Color{
+		{255, 255, 0},
+		{212, 175, 55},
+		{207, 181, 59},
+		{197, 179, 88},
+		{230, 190, 138},
+		{153, 101, 21},
+		{244, 163, 0},
+	}
+
+	for i, gold := range golds {
+		gold.R = gold.R / 255.0
+		gold.G = gold.G / 255.0
+		gold.B = gold.B / 255.0
+		golds[i] = gold
+		// fmt.Println(gold)
+	}
+
 	executor := ledsim.NewExecutor(sys, 60,
 		// ledsim.TimingStats{},
+		ledsim.StallCheck{},
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
 				{
-					Label:    "display white for 10 seconds as background layer",
-					Offset:   0,                   // start at 0 seconds
-					Duration: time.Second * 10000, // end at 10 seconds
+					Label:    "black background",
+					Offset:   0,
+					Duration: time.Hour,
 					Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-						led.Color = colorful.Color{0, 0, 0} // just make all LEDs white
+						led.Color = colorful.Color{0, 0, 0}
 					}),
+					Layer: -1000,
 				},
 				{
-					Label:    "snake effect",
+					Label:    "segment test",
 					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    1,
+					Duration: time.Minute * 5,
+					Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
 				},
-				{
-					Label:    "snake effect",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    2,
-				},
-				{
-					Label:    "snake effect",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    3,
-				},
-				{
-					Label:    "snake effect",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    1,
-				},
-				{
-					Label:    "snake effect",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    2,
-				},
-				{
-					Label:    "snake effect",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect:   effects.NewSnake(time.Hour, 200, colorful.FastHappyColor()),
-					Layer:    3,
-				},
+				// {
+				// 	Label:    "testing avoiding snake",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+				// 		Duration:        time.Minute * 5,
+				// 		Palette:         golds,
+				// 		Speed:           100,
+				// 		RandomizeColors: true,
+				// 		Head:            5,
+				// 		NumSnakes:       5,
+				// 		SnakeLength:     50,
+				// 	}),
+				// },
+				// {
+				// 	Label:    "display white for 10 seconds as background layer",
+				// 	Offset:   0,                // start at 0 seconds
+				// 	Duration: time.Second * 10, // end at 10 seconds
+				// 	Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
+				// 		led.Color = colorful.Color{led.X * (1 - p), led.Y * (1 - p), led.Z * (1 - p)} // just make all LEDs white
+				// 	}),
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    1,
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    2,
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    3,
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    1,
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    2,
+				// },
+				// {
+				// 	Label:    "snake effect",
+				// 	Offset:   0,
+				// 	Duration: time.Hour,
+				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
+				// 	Layer:    3,
+				// },
 				// {
 				// 	Label:    "display white for 10 seconds as background layer",
 				// 	Offset:   0,                   // start at 0 seconds
@@ -107,7 +155,7 @@ func main() {
 				// 		return colorful.Color{0, 0, 1}, p // blue, with p (progress, from [0..1] representing the progress of the animation) as the blending factor
 				// 	}), ledsim.BlendLuvLCh). // use LuvLCh blending
 				// 					WithEasing(ease.OutCubic). // ease the progress function with OutCubic
-				// 					WithRepetition(2, true),   // repeat 10 times, with reversing (so it animates the flashing on and flashing off)
+				// 					WithRepetition(20, true),  // repeat 10 times, with reversing (so it animates the flashing on and flashing off)
 				// 	Layer: 1, // render this after the white (which is layer 0)
 				// },
 				// {
@@ -136,6 +184,11 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
+			if ctx.Err() != nil {
+				fmt.Println("emergency shutdown")
+				os.Exit(1)
+			}
+
 			fmt.Println("ctrl+c received, quitting...")
 			cancel()
 		}

@@ -112,11 +112,11 @@ var mappingFile []byte
 
 // uses the ledpos and mapping text to build static graph
 func (g *undirectedGraph) populateGraph(sys *System) {
-	crack := regexp.MustCompile("\\s{12}\\{\\d*\\}")
-	coordSection := regexp.MustCompile("\\{-?\\d*\\.\\d*,\\s-?\\d*\\.\\d*,\\s-?\\d*\\.\\d*\\}")
-	coord := regexp.MustCompile("-?\\d*\\.\\d*")
+	crack := regexp.MustCompile(`\s{12}\{\d*\}`)
+	coordSection := regexp.MustCompile(`\{-?\d*\.\d*,\s-?\d*\.\d*,\s-?\d*\.\d*\}`)
+	coord := regexp.MustCompile(`-?\d*\.\d*`)
 
-	vertexPair := regexp.MustCompile("-?\\d*\\.\\d*")
+	vertexPair := regexp.MustCompile(`-?\d*\.\d*`)
 
 	ledposScanner := bufio.NewScanner(bytes.NewReader(ledposFile))
 	mappingScanner := bufio.NewScanner(bytes.NewReader(mappingFile))
