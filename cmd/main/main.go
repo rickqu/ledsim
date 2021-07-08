@@ -60,21 +60,37 @@ func main() {
 		ledsim.StallCheck{},
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
+				/*
+					{
+						Label:    "black background",
+						Offset:   0,
+						Duration: time.Hour,
+						Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
+							led.Color = colorful.Color{0, 0, 0}
+						}),
+						Layer: -1000,
+					},
+				*/
 				{
-					Label:    "black background",
+					Label:    "random test",
 					Offset:   0,
-					Duration: time.Hour,
-					Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-						led.Color = colorful.Color{0, 0, 0}
-					}),
-					Layer: -1000,
+					Duration: time.Second * 15,
+					Effect:   effects.NewRandom(time.Second*15, time.Second*5, colorful.Color{0, 0, 0}, golds[0]),
 				},
 				{
-					Label:    "segment test",
-					Offset:   0,
-					Duration: time.Minute * 5,
-					Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
+					Label:    "pseudorandom test",
+					Offset:   time.Second * 15,
+					Duration: time.Second * 15,
+					Effect:   effects.NewPseudorandom(time.Second*15, time.Second*5, golds[0], colorful.Color{0, 0, 0}),
 				},
+				/*
+					{
+						Label:    "segment test",
+						Offset:   0,
+						Duration: time.Minute * 5,
+						Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
+					},
+				*/
 				// {
 				// 	Label:    "testing avoiding snake",
 				// 	Offset:   0,
