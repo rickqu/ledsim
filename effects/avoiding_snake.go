@@ -12,16 +12,18 @@ import (
 )
 
 type AvoidingSnakeInstance struct {
-	comps   []*ledsim.LED
-	color   colorful.Color
-	dur     time.Duration
-	speed   float64
-	curMove int
-	head    int
+	comps      []*ledsim.LED
+	color      colorful.Color
+	dur        time.Duration
+	speed      float64
+	curMove    int
+	head       int
+	searchDist int
 }
 
 type AvoidingSnake struct {
-	snakes []*AvoidingSnakeInstance
+	snakes      []*AvoidingSnakeInstance
+	scoringDist int
 }
 
 type AvoidingSnakeConfig struct {
@@ -32,6 +34,8 @@ type AvoidingSnakeConfig struct {
 	Head            int
 	NumSnakes       int
 	SnakeLength     int
+	SearchDist      int
+	ScoringDist     int
 }
 
 type ScoringMap struct {
@@ -96,16 +100,18 @@ func (a *AvoidingSnake) ComputeScoringMap(depth int) *ScoringMap {
 
 func NewAvoidingSnake(config *AvoidingSnakeConfig) *AvoidingSnake {
 	snake := &AvoidingSnake{
-		snakes: make([]*AvoidingSnakeInstance, config.NumSnakes),
+		snakes:      make([]*AvoidingSnakeInstance, config.NumSnakes),
+		scoringDist: config.ScoringDist,
 	}
 
 	for i := range snake.snakes {
 		snek := &AvoidingSnakeInstance{
-			comps:   make([]*ledsim.LED, config.SnakeLength),
-			dur:     config.Duration,
-			speed:   config.Speed,
-			curMove: 0,
-			head:    config.Head,
+			comps:      make([]*ledsim.LED, config.SnakeLength),
+			dur:        config.Duration,
+			speed:      config.Speed,
+			curMove:    0,
+			head:       config.Head,
+			searchDist: config.SearchDist,
 		}
 
 		if config.RandomizeColors {
@@ -174,11 +180,11 @@ func (s *AvoidingSnake) OnEnter(sys *ledsim.System) {
 // 	return false
 // }
 
-func (m *ScoringMap) ScorePath(secondLast, last, to *ledsim.LED) int {
+func (m *ScoringMap) ScorePath(secondLast, last, to *ledsim.LED, searchDist int) int {
 	// score the next 10 LEDs
 	var score int
 	curr := to
-	for i := 0; i < 50; i++ {
+	for i := 0; i < searchDist; i++ {
 		found := false
 		for _, next := range to.Neighbours {
 			if next == last || next == secondLast || curr == next {
@@ -202,8 +208,8 @@ func (m *ScoringMap) ScorePath(secondLast, last, to *ledsim.LED) int {
 func (a *AvoidingSnakeInstance) step(sys *ledsim.System, m *ScoringMap) bool {
 	current := a.comps[len(a.comps)-1]
 	sort.Slice(current.Neighbours, func(i, j int) bool {
-		return m.ScorePath(a.comps[len(a.comps)-2], current, current.Neighbours[i])+rand.Intn(10) <
-			m.ScorePath(a.comps[len(a.comps)-2], current, current.Neighbours[j])+rand.Intn(10)
+		return m.ScorePath(a.comps[len(a.comps)-2], current, current.Neighbours[i], a.searchDist)+rand.Intn(10) <
+			m.ScorePath(a.comps[len(a.comps)-2], current, current.Neighbours[j], a.searchDist)+rand.Intn(10)
 	})
 
 	for _, next := range current.Neighbours {
@@ -220,7 +226,7 @@ func (a *AvoidingSnakeInstance) step(sys *ledsim.System, m *ScoringMap) bool {
 }
 
 func (s *AvoidingSnake) Eval(progress float64, sys *ledsim.System) {
-	m := s.ComputeScoringMap(200)
+	m := s.ComputeScoringMap(s.scoringDist)
 	for _, snake := range s.snakes {
 		snake.eval(progress, sys, m)
 	}

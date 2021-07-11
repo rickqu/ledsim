@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"ledsim"
 	"ledsim/effects"
+	"ledsim/mpv"
 	"ledsim/outputs"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -22,6 +25,17 @@ func main() {
 	sys := ledsim.NewSystem()
 	ledsim.LoadLEDs(sys)
 
+	var player *mpv.Player
+	var err error
+	if len(os.Args) >= 2 {
+		player, err = mpv.NewPlayer(os.Args[1], len(os.Args) >= 3)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		fmt.Println("warn: running without audio/mpv")
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())
@@ -31,6 +45,24 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
+	e.GET("/seek/:duration", func(c echo.Context) error {
+		if player == nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "seeking not supported when no audio is playing")
+		}
+
+		duration, err := time.ParseDuration(c.Param("duration"))
+		if err != nil {
+			return err
+		}
+
+		err = player.SeekTo(duration)
+		if err != nil {
+			return err
+		}
+
+		return c.String(http.StatusOK, "seek success")
+	})
+
 	mirage := outputs.NewMirage(e)
 
 	go func() {
@@ -38,13 +70,13 @@ func main() {
 	}()
 
 	golds := []colorful.Color{
-		{255, 255, 0},
-		{212, 175, 55},
-		{207, 181, 59},
-		{197, 179, 88},
+		// {255, 255, 0},
+		// {212, 175, 55},
+		// {207, 181, 59},
+		// {197, 179, 88},
 		{230, 190, 138},
-		{153, 101, 21},
-		{244, 163, 0},
+		// {153, 101, 21},
+		// {244, 163, 0},
 	}
 
 	for i, gold := range golds {
@@ -55,9 +87,27 @@ func main() {
 		// fmt.Println(gold)
 	}
 
-	executor := ledsim.NewExecutor(sys, 60,
+	f, ferr := os.Create("./cpu.prof")
+	if ferr != nil {
+		log.Fatal(ferr)
+	}
+	pprof.StartCPUProfile(f)
+
+	go func() {
+		time.Sleep(time.Second * 10)
+		pprof.StopCPUProfile()
+		f.Close()
+		fmt.Println("profile complete")
+	}()
+
+	var getTimestamp func() (time.Duration, error)
+	if player != nil {
+		getTimestamp = player.GetTimestamp
+	}
+
+	executor := ledsim.NewExecutor(sys, 30,
 		// ledsim.TimingStats{},
-		ledsim.StallCheck{},
+		// ledsim.StallCheck{},
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
 				/*
@@ -77,6 +127,31 @@ func main() {
 					Duration: time.Second * 15,
 					Effect:   effects.NewRandom(time.Second*15, time.Second*5, colorful.Color{0, 0, 0}, golds[0]),
 				},
+				// {
+				// 	Label:    "shooting star test",
+				// 	Offset:   0,
+				// 	Duration: time.Second,
+				// 	Effect:   effects.NewShootingStar(effects.Vector{0, 0, 0}, effects.Vector{1, 1, 1}),
+				// },
+				// {
+				// 	Label:    "segment test",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
+				// },
+				// {
+				// 	Label:    "testing falling beads",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 30,
+				// 	Effect:   effects.NewFallingBeads(),
+				// },
+				// {
+				// 	Label:    "test flood fill",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 5,
+				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
+				// 		200, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5),
+				// },
 				{
 					Label:    "pseudorandom test",
 					Offset:   time.Second * 15,
@@ -92,17 +167,17 @@ func main() {
 					},
 				*/
 				// {
-				// 	Label:    "testing avoiding snake",
+				// 	Label:    "good snake settings",
 				// 	Offset:   0,
 				// 	Duration: time.Minute * 5,
 				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
 				// 		Duration:        time.Minute * 5,
 				// 		Palette:         golds,
-				// 		Speed:           100,
+				// 		Speed:           20,
 				// 		RandomizeColors: true,
-				// 		Head:            5,
-				// 		NumSnakes:       5,
-				// 		SnakeLength:     50,
+				// 		Head:            1,
+				// 		NumSnakes:       45,
+				// 		SnakeLength:     80,
 				// 	}),
 				// },
 				// {
@@ -191,7 +266,7 @@ func main() {
 				// 	}), ledsim.BlendLuvLCh),
 				// },
 			},
-		)),
+		), getTimestamp),
 		ledsim.NewOutput(mirage))
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -206,11 +281,23 @@ func main() {
 			}
 
 			fmt.Println("ctrl+c received, quitting...")
+			if player != nil {
+				player.Close()
+			}
 			cancel()
 		}
 	}()
 
-	err := executor.Run(ctx)
+	if player != nil {
+		err = player.Play()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println("running")
+
+	err = executor.Run(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
 		fmt.Println("executor error:", err)
 	}

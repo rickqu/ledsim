@@ -99,3 +99,19 @@ func (s *System) Normalize() {
 		}
 	})
 }
+
+func (s *System) DebugGetLEDByCoord(x float64, y float64, z float64) *LED {
+	minDist := 1.0
+	var curVertex *LED
+	for _, v := range s.LEDs {
+		dist := getDistance(x, y, z, v.X, v.Y, v.Z)
+		if dist < minDist {
+			minDist = dist
+			curVertex = v
+		}
+	}
+	if curVertex == nil {
+		panic("get vertex by coord failed")
+	}
+	return curVertex
+}
