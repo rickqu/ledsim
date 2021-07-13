@@ -1,7 +1,6 @@
 package effects
 
 import (
-	"fmt"
 	"ledsim"
 	"math"
 	"math/rand"
@@ -61,7 +60,6 @@ func (n *Noise) OnEnter(sys *ledsim.System) {
 func (n *Noise) Eval(progress float64, sys *ledsim.System) {
 	current_time := progress * float64(n.duration)
 	intpart, fraction := math.Modf(current_time / float64(n.cycle))
-	fmt.Println(intpart)
 
 	for int(intpart) > n.iteration {
 		n.populate()
@@ -70,7 +68,6 @@ func (n *Noise) Eval(progress float64, sys *ledsim.System) {
 
 	for _, led := range sys.LEDs {
 		angle := math.Atan2(led.Y, led.X) + math.Pi
-		// fmt.Println(angle)
 		section := int(angle / (2 * math.Pi))
 
 		cutoff := n.previous[section] + fraction*(n.next[section]-n.previous[section])
