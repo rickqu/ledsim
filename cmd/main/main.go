@@ -122,10 +122,29 @@ func main() {
 					},
 				*/
 				{
-					Label:    "random test",
+					Label:    "noise test",
 					Offset:   0,
 					Duration: time.Second * 15,
+					Effect: effects.NewNoise(
+						time.Second*15,
+						time.Millisecond*400,
+						0.2,
+						0.05,
+						colorful.Color{0, 0, 0},
+						golds[0],
+					),
+				},
+				{
+					Label:    "random test",
+					Offset:   time.Second * 15,
+					Duration: time.Second * 15,
 					Effect:   effects.NewRandom(time.Second*15, time.Second*5, colorful.Color{0, 0, 0}, golds[0]),
+				},
+				{
+					Label:    "pseudorandom test",
+					Offset:   time.Second * 30,
+					Duration: time.Second * 15,
+					Effect:   effects.NewPseudorandom(time.Second*15, time.Second*5, golds[0], colorful.Color{0, 0, 0}),
 				},
 				// {
 				// 	Label:    "shooting star test",
@@ -152,12 +171,6 @@ func main() {
 				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
 				// 		200, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5),
 				// },
-				{
-					Label:    "pseudorandom test",
-					Offset:   time.Second * 15,
-					Duration: time.Second * 15,
-					Effect:   effects.NewPseudorandom(time.Second*15, time.Second*5, golds[0], colorful.Color{0, 0, 0}),
-				},
 				/*
 					{
 						Label:    "segment test",
