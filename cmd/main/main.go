@@ -69,11 +69,17 @@ func main() {
 					}),
 					Layer: -1000,
 				},
+				// {
+				// 	Label:    "segment test",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
+				// },
 				{
-					Label:    "segment test",
+					Label:    "panfade_pretest",
 					Offset:   0,
 					Duration: time.Minute * 5,
-					Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
+					Effect:   effects.NewPanningFade(time.Minute*5, 0.5),
 				},
 				// {
 				// 	Label:    "testing avoiding snake",
@@ -94,7 +100,7 @@ func main() {
 				// 	Offset:   0,                // start at 0 seconds
 				// 	Duration: time.Second * 10, // end at 10 seconds
 				// 	Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-				// 		led.Color = colorful.Color{led.X * (1 - p), led.Y * (1 - p), led.Z * (1 - p)} // just make all LEDs white
+				// 		led.Color = colorful.Color{led.X, led.Y, led.Z} // just make all LEDs white
 				// 	}),
 				// },
 				// {
