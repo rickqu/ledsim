@@ -51,7 +51,6 @@ func (p *PanningFade) Eval(progress float64, sys *ledsim.System) {
 		}
 
 		if v > 90 {
-			// l = (100 - v) * 0.1 * 0.5
 			l = (-1 / 20) * (v - 100)
 		} else if v < 40 {
 			l = 0.05 * (v - 30)

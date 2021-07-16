@@ -83,9 +83,7 @@ func isKeyframeIn(needle *Keyframe, haystack []*Keyframe) bool {
 	return false
 }
 
-func (r *EffectsManager) Evaluate(system *System, start time.Time, now time.Time) {
-	delta := now.Sub(start)
-
+func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 	bucketNum := int(delta / bucketSize)
 	if bucketNum >= len(r.keyframeBuckets) {
 		return
@@ -164,11 +162,20 @@ func (r *EffectsManager) Evaluate(system *System, start time.Time, now time.Time
 }
 
 type EffectsRunner struct {
-	manager *EffectsManager
-	start   time.Time
+	manager    *EffectsManager
+	start      time.Time
+	timeGetter func() (time.Duration, error)
 }
 
-func NewEffectsRunner(manager *EffectsManager) *EffectsRunner {
+func NewEffectsRunner(manager *EffectsManager, timeGetter ...func() (time.Duration, error)) *EffectsRunner {
+	if len(timeGetter) > 0 {
+		return &EffectsRunner{
+			manager:    manager,
+			timeGetter: timeGetter[0],
+			start:      time.Now(),
+		}
+	}
+
 	return &EffectsRunner{
 		manager: manager,
 		start:   time.Now(),
@@ -176,6 +183,19 @@ func NewEffectsRunner(manager *EffectsManager) *EffectsRunner {
 }
 
 func (e *EffectsRunner) Execute(system *System, next func() error) error {
-	e.manager.Evaluate(system, e.start, time.Now())
+	if e.timeGetter != nil {
+		t, err := e.timeGetter()
+		if err != nil {
+			log.Println("warn: error getting time, falling back to wall clock:", err)
+			e.manager.Evaluate(system, time.Since(e.start))
+		} else {
+			e.start = time.Now().Add(-t)
+			e.manager.Evaluate(system, t)
+		}
+
+		return next()
+	}
+
+	e.manager.Evaluate(system, time.Since(e.start))
 	return next()
 }
