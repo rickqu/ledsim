@@ -11,6 +11,7 @@ import (
 type PanningFade struct {
 	dur   time.Duration
 	speed float64
+	// angle float64
 	// dir	float64
 }
 
@@ -18,6 +19,7 @@ func NewPanningFade(dur time.Duration, speed float64) *PanningFade {
 	return &PanningFade{
 		dur:   dur,
 		speed: speed,
+		// angle: angle,
 	}
 }
 
@@ -36,11 +38,7 @@ func (p *PanningFade) OnExit(sys *ledsim.System) {
 func (p *PanningFade) Eval(progress float64, sys *ledsim.System) {
 	leds := sys.LEDs
 
-	// for _, led := range leds {
-	// 	led.Color = colorful.Color{14, 0, 244}
-	// }
-
-	t := float64(p.dur) * progress / float64(time.Second) * float64(p.speed)
+	t := (float64(p.dur) * progress / float64(time.Second)) * float64(p.speed)
 
 	for _, led := range leds {
 		v := math.Mod((t+p.diagonalTravel(led.X+led.Z, led.Y+led.Z))*50, 100)
@@ -62,10 +60,8 @@ func (p *PanningFade) Eval(progress float64, sys *ledsim.System) {
 			l = 0.5
 		}
 
-		//fmt.Println(v)
-		led.R = colorful.LuvLCh(l, 1, v).Clamped().R
-		led.G = colorful.LuvLCh(l, 1, v).Clamped().G
-		led.B = colorful.LuvLCh(l, 1, v).Clamped().B
+		led.Color = led.Color.BlendRgb(colorful.LuvLCh(l, 1, v).Clamped(), l)
+
 	}
 
 }
