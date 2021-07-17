@@ -16,6 +16,7 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/fogleman/ease"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/lucasb-eyer/go-colorful"
@@ -120,6 +121,27 @@ func main() {
 					Layer: -1000,
 				},
 				// {
+				// 	Label:    "panning fade",
+				// 	Duration: time.Second * 10,
+				// 	Effect:   effects.NewPanningFade(time.Second*10, 0.5),
+				// },
+				{
+					Label:    "pulse",
+					Offset:   0,
+					Duration: time.Second * 30,
+					Effect: &effects.Pulse{
+						Dur:         time.Second * 10,
+						TargetColor: golds[0],
+						BaseBright:  0,
+						MaxBright:   1,
+						LoDur:       time.Second * 2,
+						HiDur:       time.Millisecond * 100,
+						UpDur:       time.Second,
+						DownDur:     time.Second,
+						EaseFunc:    ease.InOutQuad,
+					},
+				},
+				// {
 				// 	Label:    "shooting star test",
 				// 	Offset:   0,
 				// 	Duration: time.Second,
@@ -144,20 +166,20 @@ func main() {
 				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
 				// 		200, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5),
 				// },
-				{
-					Label:    "good snake settings",
-					Offset:   0,
-					Duration: time.Minute * 5,
-					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        time.Minute * 5,
-						Palette:         golds,
-						Speed:           20,
-						RandomizeColors: true,
-						Head:            1,
-						NumSnakes:       45,
-						SnakeLength:     80,
-					}),
-				},
+				// {
+				// 	Label:    "good snake settings",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+				// 		Duration:        time.Minute * 5,
+				// 		Palette:         golds,
+				// 		Speed:           20,
+				// 		RandomizeColors: true,
+				// 		Head:            1,
+				// 		NumSnakes:       45,
+				// 		SnakeLength:     80,
+				// 	}),
+				// },
 				// {
 				// 	Label:    "good snake settings",
 				// 	Offset:   0,
