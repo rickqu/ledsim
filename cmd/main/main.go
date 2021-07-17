@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"ledsim"
-	"ledsim/effects"
 	"ledsim/mpv"
 	"ledsim/outputs"
 	"log"
@@ -70,13 +69,13 @@ func main() {
 	}()
 
 	golds := []colorful.Color{
-		// {255, 255, 0},
-		// {212, 175, 55},
-		// {207, 181, 59},
-		// {197, 179, 88},
+		{255, 255, 0},
+		{212, 175, 55},
+		{207, 181, 59},
+		{197, 179, 88},
 		{230, 190, 138},
-		// {153, 101, 21},
-		// {244, 163, 0},
+		{153, 101, 21},
+		{244, 163, 0},
 	}
 
 	for i, gold := range golds {
@@ -122,7 +121,7 @@ func main() {
 				// {
 				// 	Label:    "shooting star test",
 				// 	Offset:   0,
-				// 	Duration: time.Second,
+				// 	Duration: time.Second * 5,
 				// 	Effect:   effects.NewShootingStar(effects.Vector{0, 0, 0}, effects.Vector{1, 1, 1}),
 				// },
 				// {
@@ -134,30 +133,51 @@ func main() {
 				// {
 				// 	Label:    "testing falling beads",
 				// 	Offset:   0,
-				// 	Duration: time.Second * 30,
+				// 	Duration: time.Second * 90,
 				// 	Effect:   effects.NewFallingBeads(),
 				// },
 				// {
-				// 	Label:    "test flood fill",
+				// 	Label:    "test bugged flood fill",
 				// 	Offset:   0,
+				// 	Duration: time.Millisecond * 20000,
+				// 	Effect: effects.NewBuggedFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
+				// 		2000, golds[0], effects.FadeOutFade, ease.InOutQuad),
+				// },
+				// {
+				// 	Label:    "test flood fill",
+				// 	Offset:   time.Millisecond * 2500,
 				// 	Duration: time.Second * 5,
 				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		200, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5),
+				// 		200, golds[1], effects.FadeOutRipple, 0.5),
 				// },
-				{
-					Label:    "good snake settings",
-					Offset:   0,
-					Duration: time.Minute * 5,
-					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        time.Minute * 5,
-						Palette:         golds,
-						Speed:           20,
-						RandomizeColors: true,
-						Head:            1,
-						NumSnakes:       45,
-						SnakeLength:     80,
-					}),
-				},
+				// {
+				// 	Label:    "test flood fill",
+				// 	Offset:   time.Millisecond * 5000,
+				// 	Duration: time.Second * 5,
+				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
+				// 		200, golds[2], effects.FadeOutRipple, 0.5),
+				// },
+				// {
+				// 	Label:    "test flood fill",
+				// 	Offset:   time.Millisecond * 7500,
+				// 	Duration: time.Second * 5,
+				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
+				// 		200, golds[3], effects.FadeOutRipple, 0.5),
+				// },
+				// {
+				// 	Label:    "good snake settings",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+				// 		Duration:        time.Minute * 5,
+				// 		Palette:         golds,
+				// 		Speed:           20,
+				// 		RandomizeColors: true,
+				// 		Head:            1,
+				// 		NumSnakes:       45,
+				// 		SnakeLength:     80,
+				// 	}),
+				// },
 				// {
 				// 	Label:    "good snake settings",
 				// 	Offset:   0,
