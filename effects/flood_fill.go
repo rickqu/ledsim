@@ -3,7 +3,6 @@ package effects
 import (
 	"ledsim"
 
-	"github.com/fogleman/ease"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -18,6 +17,9 @@ type FloodFill struct {
 	color        colorful.Color
 	fadeOut      FadeOut
 	fadeOutStart float64
+	fadeInEnd    float64
+	tailLength   float64
+	tailEaseFunc func(progress float64) float64
 }
 
 // type Inertia struct {
@@ -38,7 +40,7 @@ const (
 
 // speed is in LEDs per second
 func NewFloodFill(start *ledsim.LED, maxGrowth float64, color colorful.Color,
-	fadeOut FadeOut, fadeOutStart float64) *FloodFill {
+	fadeOut FadeOut, fadeOutStart, fadeInEnd, tailLength float64, tailEaseFunc func(progress float64) float64) *FloodFill {
 	return &FloodFill{
 		start:        start,
 		distMap:      make(map[*ledsim.LED]int),
@@ -46,6 +48,9 @@ func NewFloodFill(start *ledsim.LED, maxGrowth float64, color colorful.Color,
 		color:        color,
 		fadeOut:      fadeOut,
 		fadeOutStart: fadeOutStart,
+		fadeInEnd:    fadeInEnd,
+		tailLength:   tailLength,
+		tailEaseFunc: tailEaseFunc,
 	}
 }
 
@@ -86,8 +91,8 @@ func (b *FloodFill) OnExit(sys *ledsim.System) {
 }
 
 func (b *FloodFill) Eval(progress float64, sys *ledsim.System) {
-	width := (progress / 0.5) * b.maxGrowth // 0 to 1 passed to decayFunc is mapped to this range
-	if progress > 0.5 {
+	width := (progress / b.fadeInEnd) * b.maxGrowth // 0 to 1 passed to decayFunc is mapped to this range
+	if progress > b.fadeInEnd {
 		width = b.maxGrowth
 	}
 
@@ -100,19 +105,19 @@ func (b *FloodFill) Eval(progress float64, sys *ledsim.System) {
 
 		// apply decay only to last 10 LEDs
 		if width-float64(dist) < 10 {
-			led.Color = ledsim.BlendRgb(led.Color, b.color, ease.OutExpo((width-float64(dist))/10.0))
+			led.Color = ledsim.BlendRgb(led.Color, b.color, b.tailEaseFunc((width-float64(dist))/b.tailLength))
 		} else {
 			led.Color = ledsim.BlendRgb(led.Color, b.color, 1.0)
 		}
 
-		if progress > 0.5 {
+		if progress > b.fadeOutStart {
 			if b.fadeOut == FadeOutRipple {
 				// reverse it a bit lol
 				rippleWidth := ((progress - b.fadeOutStart) / (1 - b.fadeOutStart)) * b.maxGrowth
 				if float64(dist) <= rippleWidth {
 
-					if rippleWidth-float64(dist) < 10 {
-						led.Color = ledsim.BlendRgb(led.Color, prevColor, ease.OutExpo((rippleWidth-float64(dist))/10.0))
+					if rippleWidth-float64(dist) < b.tailLength {
+						led.Color = ledsim.BlendRgb(led.Color, prevColor, b.tailEaseFunc((rippleWidth-float64(dist))/b.tailLength))
 					} else {
 						led.Color = ledsim.BlendRgb(led.Color, prevColor, 1.0)
 					}

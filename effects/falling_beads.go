@@ -44,8 +44,8 @@ func (b *FallingBeads) OnEnter(sys *ledsim.System) {
 			Velocity:   0.1,
 			Progress:   0,
 			Fluid:      true,
-			Gravity:    0.3,
-			Resistance: 4.0,
+			Gravity:    0.1,
+			Resistance: 5.0,
 			Visited:    b.Visited,
 		},
 	}
@@ -62,7 +62,18 @@ func (b *FallingBeads) Eval(progress float64, sys *ledsim.System) {
 
 	b.Beads = outBeads
 
+	ignoredBeads := make(map[*ledsim.LED]bool)
+	for _, bead := range b.Beads {
+		if bead.Velocity <= 0 {
+			ignoredBeads[bead.LED] = true
+		}
+	}
+
 	for led := range b.Visited {
+		if ignoredBeads[led] {
+			continue
+		}
+
 		led.Color = colorful.Color{0, 1, 0}
 	}
 }

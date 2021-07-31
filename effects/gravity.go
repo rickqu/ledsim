@@ -93,8 +93,16 @@ func (n *Inertia) Evaluate(t float64) []*Inertia {
 		panic("t is NaN")
 	}
 
-	if n.Velocity < 0.05 {
-		n.Velocity = 0.05
+	if n.Velocity < 0 {
+		n.Velocity += t
+		if n.Velocity > 0 {
+			n.Velocity = 0
+		}
+		return []*Inertia{n}
+	}
+
+	if n.Velocity < 0.01 {
+		n.Velocity = 0.01
 	}
 
 	// s = ut + 0.5at^2
@@ -183,6 +191,9 @@ func (n *Inertia) Evaluate(t float64) []*Inertia {
 
 	var nextNext []*Inertia
 	for _, inertia := range next {
+		if len(next) > 1 {
+			inertia.Velocity = -0.5
+		}
 		nextNext = append(nextNext, inertia.Evaluate(t)...)
 	}
 
