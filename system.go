@@ -15,15 +15,21 @@ type System struct {
 	normalizeOnce *sync.Once
 }
 
+type PhysicalLEDPosition struct {
+	teensyIp        string
+	chain           int
+	positionOnChain int
+}
+
 type LED struct {
-	ID      int
-	X       float64
-	Y       float64
-	Z       float64
+	ID int
+	X  float64
+	Y  float64
+	Z  float64
+	PhysicalLEDPosition
 	RawLine string
 
 	colorful.Color
-
 	Neighbours []*LED
 }
 

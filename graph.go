@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // thread safe struct
@@ -23,6 +24,19 @@ func newGraph() *undirectedGraph {
 		vertices: make([]*LED, 0),
 		edges:    make(map[*LED][]*LED),
 	}
+}
+
+type chain struct {
+	id       int
+	pin      int
+	posOnPin int
+	length   int
+	reversed bool
+}
+
+type teensy struct {
+	IP     string
+	chains map[int]chain
 }
 
 // func (g *undirectedGraph) getEdges() map[*LED][]*LED {
@@ -110,9 +124,56 @@ var ledposFile []byte
 //go:embed mapping.txt
 var mappingFile []byte
 
+//go:embed teensy.txt
+var teensyFile []byte
+
+func (g *undirectedGraph) loadTeensys() (map[string]teensy, map[int]string) {
+	ip := regexp.MustCompile(`(?:[0-9]{1,3}\.){3}[0-9]{1,3}`)
+	teensyScanner := bufio.NewScanner(bytes.NewReader(teensyFile))
+
+	teensys := make(map[string]teensy)
+	chainToIpMap := make(map[int]string)
+	var currentIp string
+	var currentPin int
+	var currentChainPosOnPin int
+	for teensyScanner.Scan() {
+		if ip.MatchString(teensyScanner.Text()) {
+			newTeensy := teensy{
+				IP:     teensyScanner.Text(),
+				chains: make(map[int]chain, 0),
+			}
+			teensys[newTeensy.IP] = newTeensy
+			currentIp = newTeensy.IP
+			currentPin = 0
+		} else {
+			chainIds := strings.Split(teensyScanner.Text(), ",")
+			for _, chainId := range chainIds {
+				isReversed := chainId[len(chainId)-1] == '\''
+				var chainIdNum int
+				if isReversed {
+					chainIdNum, _ = strconv.Atoi(chainId[0 : len(chainId)-1])
+				} else {
+					chainIdNum, _ = strconv.Atoi(chainId)
+				}
+				teensys[currentIp].chains[chainIdNum] = chain{id: chainIdNum, pin: currentPin, posOnPin: currentChainPosOnPin, length: 0, reversed: isReversed}
+				currentChainPosOnPin += 1
+				chainToIpMap[chainIdNum] = currentIp
+			}
+			currentChainPosOnPin = 0
+			currentPin += 1
+		}
+	}
+	return teensys, chainToIpMap
+}
+
 // uses the ledpos and mapping text to build static graph
 func (g *undirectedGraph) populateGraph(sys *System) {
+
+	// aka chainId
 	crack := regexp.MustCompile(`\s{12}\{\d*\}`)
+
+	// Golang does not support lookaheads and so we will need to remove the ". {" later.
+	coordPos := regexp.MustCompile(`\d*\.\s*\{`)
 	coordSection := regexp.MustCompile(`\{-?\d*\.\d*,\s-?\d*\.\d*,\s-?\d*\.\d*\}`)
 	coord := regexp.MustCompile(`-?\d*\.\d*`)
 
@@ -121,9 +182,15 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 	ledposScanner := bufio.NewScanner(bytes.NewReader(ledposFile))
 	mappingScanner := bufio.NewScanner(bytes.NewReader(mappingFile))
 
+	_, ledToIpMap := g.loadTeensys()
+
 	currLedRun := make([]*LED, 0)
+	var chainIdNum int
 	for ledposScanner.Scan() {
 		if crack.MatchString(ledposScanner.Text()) {
+			chainIdWithBrackets := strings.TrimSpace(ledposScanner.Text())
+			chainIdNum, _ = strconv.Atoi(strings.Trim(chainIdWithBrackets, "{}"))
+
 			// parse through list and make edges
 			// make new list
 			g.vertices = append(g.vertices, currLedRun...)
@@ -131,27 +198,32 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 				g.addEdge(currLedRun[i-1], currLedRun[i])
 			}
 			currLedRun = make([]*LED, 0)
-		} else {
-			if coordSection.MatchString(ledposScanner.Text()) {
-				coordStr := coordSection.FindAllString(ledposScanner.Text(), 1)
-				coords := coord.FindAllStringSubmatch(coordStr[0], 3)
-				X, _ := strconv.ParseFloat(coords[0][0], 64)
-				Y, _ := strconv.ParseFloat(coords[1][0], 64)
-				Z, _ := strconv.ParseFloat(coords[2][0], 64)
+		} else if coordSection.MatchString(ledposScanner.Text()) {
+			coordStr := coordSection.FindAllString(ledposScanner.Text(), 1)
+			coords := coord.FindAllStringSubmatch(coordStr[0], 3)
+			X, _ := strconv.ParseFloat(coords[0][0], 64)
+			Y, _ := strconv.ParseFloat(coords[1][0], 64)
+			Z, _ := strconv.ParseFloat(coords[2][0], 64)
+			IP, _ := ledToIpMap[chainIdNum]
+			coordPosId, _ := strconv.Atoi(strings.Split(coordPos.FindAllString(ledposScanner.Text(), 1)[0], ".")[0])
 
-				led := &LED{
-					X:       X,
-					Y:       Y,
-					Z:       Z,
-					RawLine: ledposScanner.Text(),
-				}
-
-				sys.AddLED(led)
-
-				currLedRun = append(currLedRun, led)
-			} else {
-				fmt.Fprintln(os.Stdout, "no coord found")
+			led := &LED{
+				X: X,
+				Y: Y,
+				Z: Z,
+				PhysicalLEDPosition: PhysicalLEDPosition{
+					teensyIp:        IP,
+					chain:           chainIdNum,
+					positionOnChain: coordPosId,
+				},
+				RawLine: ledposScanner.Text(),
 			}
+
+			sys.AddLED(led)
+
+			currLedRun = append(currLedRun, led)
+		} else {
+			fmt.Fprintln(os.Stdout, "no coord found")
 		}
 	}
 
