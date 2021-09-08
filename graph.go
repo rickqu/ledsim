@@ -26,19 +26,6 @@ func newGraph() *undirectedGraph {
 	}
 }
 
-type chain struct {
-	id       int
-	pin      int
-	posOnPin int
-	length   int
-	reversed bool
-}
-
-type teensy struct {
-	IP     string
-	chains map[int]chain
-}
-
 // func (g *undirectedGraph) getEdges() map[*LED][]*LED {
 // 	return g.edges
 // }
@@ -127,22 +114,22 @@ var mappingFile []byte
 //go:embed teensy.txt
 var teensyFile []byte
 
-func (g *undirectedGraph) loadTeensys() (map[string]teensy, map[int]string) {
+func (g *undirectedGraph) loadTeensys() (map[string]*Teensy, map[int]string) {
 	ip := regexp.MustCompile(`(?:[0-9]{1,3}\.){3}[0-9]{1,3}`)
 	teensyScanner := bufio.NewScanner(bytes.NewReader(teensyFile))
 
-	teensys := make(map[string]teensy)
+	teensys := make(map[string]*Teensy)
 	chainToIpMap := make(map[int]string)
 	var currentIp string
 	var currentPin int
 	var currentChainPosOnPin int
 	for teensyScanner.Scan() {
 		if ip.MatchString(teensyScanner.Text()) {
-			newTeensy := teensy{
+			newTeensy := Teensy{
 				IP:     teensyScanner.Text(),
-				chains: make(map[int]chain, 0),
+				Chains: make(map[int]*Chain, 0),
 			}
-			teensys[newTeensy.IP] = newTeensy
+			teensys[newTeensy.IP] = &newTeensy
 			currentIp = newTeensy.IP
 			currentPin = 0
 		} else {
@@ -155,7 +142,7 @@ func (g *undirectedGraph) loadTeensys() (map[string]teensy, map[int]string) {
 				} else {
 					chainIdNum, _ = strconv.Atoi(chainId)
 				}
-				teensys[currentIp].chains[chainIdNum] = chain{id: chainIdNum, pin: currentPin, posOnPin: currentChainPosOnPin, length: 0, reversed: isReversed}
+				teensys[currentIp].Chains[chainIdNum] = &Chain{Id: chainIdNum, Pin: currentPin, PosOnPin: currentChainPosOnPin, Length: 0, Reversed: isReversed}
 				currentChainPosOnPin += 1
 				chainToIpMap[chainIdNum] = currentIp
 			}
@@ -182,7 +169,8 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 	ledposScanner := bufio.NewScanner(bytes.NewReader(ledposFile))
 	mappingScanner := bufio.NewScanner(bytes.NewReader(mappingFile))
 
-	_, ledToIpMap := g.loadTeensys()
+	teensys, ledToIpMap := g.loadTeensys()
+	sys.Teensys = teensys
 
 	currLedRun := make([]*LED, 0)
 	var chainIdNum int
@@ -212,13 +200,13 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 				Y: Y,
 				Z: Z,
 				PhysicalLEDPosition: PhysicalLEDPosition{
-					teensyIp:        IP,
-					chain:           chainIdNum,
-					positionOnChain: coordPosId,
+					TeensyIp:        IP,
+					Chain:           chainIdNum,
+					PositionOnChain: coordPosId,
 				},
 				RawLine: ledposScanner.Text(),
 			}
-
+			teensys[led.TeensyIp].Chains[chainIdNum].Length += 1
 			sys.AddLED(led)
 
 			currLedRun = append(currLedRun, led)
@@ -245,4 +233,5 @@ func (g *undirectedGraph) populateGraph(sys *System) {
 	} else if err1 := mappingScanner.Err(); err1 != nil {
 		log.Fatal(err1)
 	}
+
 }
