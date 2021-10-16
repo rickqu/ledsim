@@ -15,11 +15,13 @@ type udpOutput struct {
 	outputBuff []byte
 }
 
+const TARGET_PORT = 5151
+const SERVER_PORT = 900
+
 type TeensyNetwork struct {
 	outputConn *net.UDPConn
 	binConns   *sync.Map
 	connsMutex *sync.Mutex
-	serverPort int // probably already stored in outputConn but I don't know how to get it out
 }
 
 func (t *TeensyNetwork) Display(sys *ledsim.System) {
@@ -48,10 +50,8 @@ func (t *TeensyNetwork) Display(sys *ledsim.System) {
 }
 
 func NewTeensyNetwork(e *echo.Echo, sys *ledsim.System) *TeensyNetwork {
-
 	outputConnection, err := net.ListenUDP("udp", &net.UDPAddr{
-		IP:   net.IPv4(10, 1, 2, 1),
-		Port: 300,
+		Port: SERVER_PORT,
 	})
 	if err != nil {
 		panic("Cannot start UDP server: " + err.Error())
@@ -61,7 +61,6 @@ func NewTeensyNetwork(e *echo.Echo, sys *ledsim.System) *TeensyNetwork {
 		binConns:   new(sync.Map),
 		connsMutex: new(sync.Mutex),
 		outputConn: outputConnection,
-		serverPort: 300,
 	}
 
 	for ip, teensy := range sys.Teensys {
@@ -77,10 +76,12 @@ func NewTeensyNetwork(e *echo.Echo, sys *ledsim.System) *TeensyNetwork {
 			ipArr = append(ipArr, byte(convResult))
 		}
 
-		// we use RGB (3 bytes) for each LED.
-		network.binConns.Store(ip, udpOutput{
-			outputAddr: &net.UDPAddr{IP: net.IPv4(ipArr[0], ipArr[1], ipArr[2], ipArr[3]), Port: network.serverPort},
-			outputBuff: make([]byte, lenPacket*3)})
+		// we use RGB (3 bytes) for each LED. Each Teensy is aware of how long the chains are.
+		outputArray := make([]byte, lenPacket*3)
+
+		network.binConns.Store(ip, &udpOutput{
+			outputAddr: &net.UDPAddr{IP: net.IPv4(ipArr[0], ipArr[1], ipArr[2], ipArr[3]), Port: TARGET_PORT},
+			outputBuff: outputArray})
 	}
 	mapLedToOutputArray(sys, network)
 	return network
@@ -92,10 +93,14 @@ func mapLedToOutputArray(sys *ledsim.System, teensyNetwork *TeensyNetwork) {
 		chain := teensy.Chains[led.Chain]
 
 		ledsBeforeTarget := 0
-		for i := 0; i < chain.Pin; i++ {
-			for _, chain := range teensy.Chains {
-				if chain.Pin < i {
-					ledsBeforeTarget += chain.Length
+		for i := 0; i <= chain.Pin; i++ {
+			for _, specificChain := range teensy.Chains {
+				if specificChain.Pin < i {
+					ledsBeforeTarget += specificChain.Length
+				} else if specificChain.Pin == i {
+					if specificChain.PosOnPin < chain.PosOnPin {
+						ledsBeforeTarget += specificChain.Length
+					}
 				}
 			}
 		}
@@ -104,9 +109,34 @@ func mapLedToOutputArray(sys *ledsim.System, teensyNetwork *TeensyNetwork) {
 		} else {
 			ledsBeforeTarget += led.PositionOnChain
 		}
-		outputArray, _ := teensyNetwork.binConns.Load(led.TeensyIp)
-		led.Red = &outputArray.([]byte)[ledsBeforeTarget*3]
-		led.Green = &outputArray.([]byte)[ledsBeforeTarget*3+1]
-		led.Blue = &outputArray.([]byte)[ledsBeforeTarget*3+2]
+		outputArrayFromMap, _ := teensyNetwork.binConns.Load(led.TeensyIp)
+		outputArray := outputArrayFromMap.(*udpOutput).outputBuff
+
+		// Our testing framework can only support
+		// 150 LEDs per pin due to powering constraints.
+		random := byte(1)
+		if ledsBeforeTarget > 149 {
+			led.Red = &random
+			led.Green = &random
+			led.Blue = &random
+			continue
+		}
+
+		led.Red = &outputArray[ledsBeforeTarget*3]
+		led.Green = &outputArray[ledsBeforeTarget*3+1]
+		led.Blue = &outputArray[ledsBeforeTarget*3+2]
+
+		// uncomment the following line to see which slots in the output array an
+		// LED maps to.
+		// if *led.Red != 0 {
+		// 	panic("We've already visited this array slot!")
+		// }
+		// *led.Red = 255
+		// *led.Green = 255
+		// *led.Blue = 255
 	}
+	// debugging view what the output buffer looks like.
+	// test, _ := teensyNetwork.binConns.Load("10.1.2.1")
+	// testRead := test.(*udpOutput).outputBuff
+	// print(testRead)
 }
