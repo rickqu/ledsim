@@ -63,7 +63,7 @@ func main() {
 		return c.String(http.StatusOK, "seek success")
 	})
 
-	mirage := outputs.NewMirage(e)
+	mirage := outputs.NewTeensyNetwork(e, sys)
 
 	go func() {
 		log.Fatalln(e.Start(":9000"))
@@ -131,12 +131,12 @@ func main() {
 				// 	Duration: time.Minute * 5,
 				// 	Effect:   effects.NewSegmentShift(time.Minute*5, 100, 30, 70, golds[0]),
 				// },
-				{
-					Label:    "testing falling beads",
-					Offset:   0,
-					Duration: time.Second * 30,
-					Effect:   effects.NewFallingBeads(),
-				},
+				// {
+				// 	Label:    "testing falling beads",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 30,
+				// 	Effect:   effects.NewFallingBeads(),
+				// },
 				// {
 				// 	Label:    "test flood fill",
 				// 	Offset:   time.Second,
@@ -152,20 +152,20 @@ func main() {
 				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
 				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5, 0.9, 50),
 				// },
-				// {
-				// 	Label:    "good snake settings",
-				// 	Offset:   0,
-				// 	Duration: time.Minute * 5,
-				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-				// 		Duration:        time.Minute * 5,
-				// 		Palette:         golds,
-				// 		Speed:           20,
-				// 		RandomizeColors: true,
-				// 		Head:            1,
-				// 		NumSnakes:       45,
-				// 		SnakeLength:     80,
-				// 	}),
-				// },
+				{
+					Label:    "good snake settings",
+					Offset:   0,
+					Duration: time.Minute * 5,
+					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+						Duration:        time.Minute * 5,
+						Palette:         golds,
+						Speed:           20,
+						RandomizeColors: true,
+						Head:            1,
+						NumSnakes:       45,
+						SnakeLength:     80,
+					}),
+				},
 				// {
 				// 	Label:    "good snake settings",
 				// 	Offset:   0,
