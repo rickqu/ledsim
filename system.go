@@ -7,7 +7,8 @@ import (
 )
 
 type System struct {
-	LEDs []*LED
+	LEDs    []*LED
+	Teensys map[string]*Teensy
 
 	XStats        *Stats
 	YStats        *Stats
@@ -15,16 +16,42 @@ type System struct {
 	normalizeOnce *sync.Once
 }
 
+type PhysicalLEDPosition struct {
+	TeensyIp        string
+	Chain           int
+	PositionOnChain int
+}
+
+type RGBOutput struct {
+	Red   *byte
+	Green *byte
+	Blue  *byte
+}
+
 type LED struct {
-	ID      int
-	X       float64
-	Y       float64
-	Z       float64
+	ID int
+	X  float64
+	Y  float64
+	Z  float64
+	PhysicalLEDPosition
+	RGBOutput
 	RawLine string
 
 	colorful.Color
-
 	Neighbours []*LED
+}
+
+type Chain struct {
+	Id       int
+	Pin      int
+	PosOnPin int
+	Length   int
+	Reversed bool
+}
+
+type Teensy struct {
+	IP     string
+	Chains map[int]*Chain
 }
 
 type Middleware interface {

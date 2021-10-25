@@ -1,0 +1,1 @@
+Min Golang version: 1.16.
