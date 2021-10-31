@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"ledsim"
 	"ledsim/effects"
+	"ledsim/metrics"
 	"ledsim/mpv"
 	"ledsim/outputs"
 	"log"
@@ -22,6 +23,7 @@ import (
 )
 
 func main() {
+	metrics.StartMetrics()
 	sys := ledsim.NewSystem()
 	ledsim.LoadLEDs(sys)
 
