@@ -9,5 +9,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/labstack/echo/v4 v4.3.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 )
