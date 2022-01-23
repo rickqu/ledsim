@@ -2,10 +2,8 @@ package control_panel
 
 import (
 	"encoding/json"
-	"fmt"
 	"ledsim/control_panel/parameters"
 	"net/http"
-	"reflect"
 
 	"github.com/labstack/echo/v4"
 )
@@ -36,8 +34,6 @@ func InitControlPanel(e *echo.Echo) {
 		if err := c.Bind(setParamCommand); err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
-		typeOfParam := reflect.TypeOf(setParamCommand.Param)
-		fmt.Println(typeOfParam.Name())
 
 		if err := parameters.SetParam(setParamCommand); err != nil {
 			return c.String(http.StatusBadRequest, err.Error())

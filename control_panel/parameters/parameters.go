@@ -5,13 +5,13 @@ import (
 )
 
 var Params = []Parameter{
-	SlideParam{
+	&SlideParam{
 		Name:            "Brightness",
 		Value:           50,
 		LowerBoundLabel: "Dimmer",
 		UpperBoundLabel: "Brighter",
 	},
-	ColourParam{
+	&ColourParam{
 		Name: "Gold",
 		Color: colorful.Color{
 			R: 230,
@@ -19,7 +19,7 @@ var Params = []Parameter{
 			B: 138,
 		},
 	},
-	ThemeParam{
+	&ThemeParam{
 		Name:           "Season",
 		Value:          "Spring",
 		PossibleValues: []string{"Summer", "Autumn", "Winter", "Spring"},

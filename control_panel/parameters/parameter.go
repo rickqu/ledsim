@@ -59,6 +59,15 @@ func GetArtworkInfo() ArtworkInfo {
 	return ArtworkInformation
 }
 
+func GetParameter(name string) Parameter {
+	for _, param := range params {
+		if param.GetName() == name {
+			return param
+		}
+	}
+	panic("Parameter " + name + " not found")
+}
+
 func SetParam(command *SetParamCommand) error {
 	for i := range params {
 		if params[i].GetName() == command.ParamName {
@@ -74,35 +83,33 @@ func SetParam(command *SetParamCommand) error {
 
 func parseParamUpdate(index int, paramToParse interface{}) error {
 	switch params[index].(type) {
-	case SlideParam:
+	case *SlideParam:
 		newParamValue, ok := paramToParse.(float64) // in JSON there is only Number type, hence it converts to float64 in Go
 		if !ok {
 			return errors.New("Tried to parse SlideParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(SlideParam)
+		updatedParam := params[index].(*SlideParam)
+		updatedParam.GetName()
 		updatedParam.Value = int(newParamValue)
-		params[index] = updatedParam
 		return nil
-	case ColourParam:
+	case *ColourParam:
 		newParamValue, ok := paramToParse.(map[string]interface{})
 		if !ok {
 			return errors.New("Tried to parse ColourParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(ColourParam)
-		err := updateColourFromInput(&updatedParam, newParamValue)
+		updatedParam := params[index].(*ColourParam)
+		err := updateColourFromInput(updatedParam, newParamValue)
 		if err != nil {
 			return err
 		}
-		params[index] = updatedParam
 		return nil
-	case ThemeParam:
+	case *ThemeParam:
 		newParamValue, ok := paramToParse.(string)
 		if !ok {
 			return errors.New("Tried to parse ThemeParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(ThemeParam)
+		updatedParam := params[index].(*ThemeParam)
 		updatedParam.Value = newParamValue
-		params[index] = updatedParam
 		return nil
 	default:
 		return errors.New("Could not parse type " + reflect.TypeOf(params[index]).Name())
