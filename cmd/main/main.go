@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"ledsim"
+	"ledsim/control_panel"
 	"ledsim/effects"
 	"ledsim/metrics"
 	"ledsim/mpv"
@@ -63,6 +64,8 @@ func main() {
 
 		return c.String(http.StatusOK, "seek success")
 	})
+
+	control_panel.InitControlPanel(e)
 
 	mirage := outputs.NewMirage(e)
 
