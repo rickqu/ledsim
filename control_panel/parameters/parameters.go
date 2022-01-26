@@ -4,14 +4,14 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-var Params = []Parameter{
-	&SlideParam{
+var Params = map[string]Parameter{
+	"Brightness": &SlideParam{
 		Name:            "Brightness",
 		Value:           50,
 		LowerBoundLabel: "Dimmer",
 		UpperBoundLabel: "Brighter",
 	},
-	&ColourParam{
+	"Gold": &ColourParam{
 		Name: "Gold",
 		Color: colorful.Color{
 			R: 230,
@@ -19,7 +19,7 @@ var Params = []Parameter{
 			B: 138,
 		},
 	},
-	&ThemeParam{
+	"Season": &ThemeParam{
 		Name:           "Season",
 		Value:          "Spring",
 		PossibleValues: []string{"Summer", "Autumn", "Winter", "Spring"},

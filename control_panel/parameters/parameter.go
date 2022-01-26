@@ -22,7 +22,7 @@ type SlideParam struct {
 	UpperBoundLabel string
 }
 
-func (s SlideParam) GetName() string {
+func (s *SlideParam) GetName() string {
 	return s.Name
 }
 
@@ -31,7 +31,7 @@ type ColourParam struct {
 	colorful.Color
 }
 
-func (s ColourParam) GetName() string {
+func (s *ColourParam) GetName() string {
 	return s.Name
 }
 
@@ -41,17 +41,17 @@ type ThemeParam struct {
 	PossibleValues []string
 }
 
-func (s ThemeParam) GetName() string {
+func (s *ThemeParam) GetName() string {
 	return s.Name
 }
 
-var params []Parameter
+var params map[string]Parameter
 
 func LoadParams() {
 	params = Params
 }
 
-func GetParameters() []Parameter {
+func GetParameters() map[string]Parameter {
 	return params
 }
 
@@ -60,18 +60,17 @@ func GetArtworkInfo() ArtworkInfo {
 }
 
 func GetParameter(name string) Parameter {
-	for _, param := range params {
-		if param.GetName() == name {
-			return param
-		}
+	if paramToReturn, ok := params[name]; !ok {
+		return paramToReturn
+	} else {
+		panic("Parameter " + name + " not found")
 	}
-	panic("Parameter " + name + " not found")
 }
 
 func SetParam(command *SetParamCommand) error {
-	for i := range params {
-		if params[i].GetName() == command.ParamName {
-			err := parseParamUpdate(i, command.Param)
+	for _, value := range params {
+		if value.GetName() == command.ParamName {
+			err := parseParamUpdate(value, command.Param)
 			if err != nil {
 				return err
 			}
@@ -81,14 +80,14 @@ func SetParam(command *SetParamCommand) error {
 	return errors.New("No param found")
 }
 
-func parseParamUpdate(index int, paramToParse interface{}) error {
-	switch params[index].(type) {
+func parseParamUpdate(paramValue Parameter, paramToParse interface{}) error {
+	switch paramValue.(type) {
 	case *SlideParam:
 		newParamValue, ok := paramToParse.(float64) // in JSON there is only Number type, hence it converts to float64 in Go
 		if !ok {
 			return errors.New("Tried to parse SlideParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(*SlideParam)
+		updatedParam := paramValue.(*SlideParam)
 		updatedParam.GetName()
 		updatedParam.Value = int(newParamValue)
 		return nil
@@ -97,7 +96,7 @@ func parseParamUpdate(index int, paramToParse interface{}) error {
 		if !ok {
 			return errors.New("Tried to parse ColourParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(*ColourParam)
+		updatedParam := paramValue.(*ColourParam)
 		err := updateColourFromInput(updatedParam, newParamValue)
 		if err != nil {
 			return err
@@ -108,11 +107,11 @@ func parseParamUpdate(index int, paramToParse interface{}) error {
 		if !ok {
 			return errors.New("Tried to parse ThemeParam but was not successful. Provided value type is " + reflect.TypeOf(paramToParse).Name())
 		}
-		updatedParam := params[index].(*ThemeParam)
+		updatedParam := paramValue.(*ThemeParam)
 		updatedParam.Value = newParamValue
 		return nil
 	default:
-		return errors.New("Could not parse type " + reflect.TypeOf(params[index]).Name())
+		return errors.New("Could not parse type " + reflect.TypeOf(paramValue).Name())
 	}
 }
 
