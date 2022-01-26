@@ -32,13 +32,9 @@ type EffectsManager struct {
 }
 
 var blackFrame = &Keyframe{
-	Label:    "black background",
-	Offset:   0,
-	Duration: 1 * time.Second,
 	Effect: LEDEffect(func(p float64, led *LED) {
 		led.Color = colorful.Color{0, 0, 0}
 	}),
-	Layer: -1000,
 }
 
 func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
@@ -62,9 +58,6 @@ func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
 		}
 
 		if outOfBounds {
-			blackFrame.Offset = lower
-			bucket = append(bucket, blackFrame)
-			keyframeBuckets = append(keyframeBuckets, bucket)
 			break
 		}
 
@@ -149,6 +142,9 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 	}
 
 	r.lastKeyframes = currentKeyframes
+
+	// Clear canvas before running other animations
+	blackFrame.Effect.Eval(0, system)
 
 	for _, keyframe := range currentKeyframes {
 		if r.blacklist[keyframe] {
