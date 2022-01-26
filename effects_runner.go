@@ -5,6 +5,8 @@ import (
 	"runtime/debug"
 	"sort"
 	"time"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 const (
@@ -27,6 +29,12 @@ type EffectsManager struct {
 	keyframeBuckets [][]*Keyframe // each bucket is 1 second
 	lastKeyframes   []*Keyframe
 	blacklist       map[*Keyframe]bool
+}
+
+var blackFrame = &Keyframe{
+	Effect: LEDEffect(func(p float64, led *LED) {
+		led.Color = colorful.Color{0, 0, 0}
+	}),
 }
 
 func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
@@ -64,7 +72,6 @@ func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
 		// 	fmt.Println(keyframe.Label)
 		// }
 		// fmt.Println("")
-
 	}
 
 	return &EffectsManager{
@@ -84,10 +91,7 @@ func isKeyframeIn(needle *Keyframe, haystack []*Keyframe) bool {
 }
 
 func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
-	bucketNum := int(delta / bucketSize)
-	if bucketNum >= len(r.keyframeBuckets) {
-		return
-	}
+	bucketNum := int(delta/bucketSize) % len(r.keyframeBuckets)
 
 	bucket := r.keyframeBuckets[bucketNum]
 
@@ -138,6 +142,9 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 	}
 
 	r.lastKeyframes = currentKeyframes
+
+	// Clear canvas before running other animations
+	blackFrame.Effect.Eval(0, system)
 
 	for _, keyframe := range currentKeyframes {
 		if r.blacklist[keyframe] {

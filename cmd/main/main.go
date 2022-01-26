@@ -112,15 +112,6 @@ func main() {
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
-				{
-					Label:    "black background",
-					Offset:   0,
-					Duration: time.Hour,
-					Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-						led.Color = colorful.Color{0, 0, 0}
-					}),
-					Layer: -1000,
-				},
 				// {
 				// 	Label:    "shooting star test",
 				// 	Offset:   0,
@@ -176,20 +167,20 @@ func main() {
 				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
 				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5, 0.9, 50),
 				// },
-				{
-					Label:    "good snake settings",
-					Offset:   0,
-					Duration: time.Minute * 5,
-					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        time.Minute * 5,
-						Palette:         golds,
-						Speed:           20,
-						RandomizeColors: true,
-						Head:            1,
-						NumSnakes:       45,
-						SnakeLength:     80,
-					}),
-				},
+				// {
+				// 	Label:    "good snake settings",
+				// 	Offset:   0,
+				// 	Duration: time.Minute * 5,
+				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+				// 		Duration:        time.Minute * 5,
+				// 		Palette:         golds,
+				// 		Speed:           20,
+				// 		RandomizeColors: true,
+				// 		Head:            1,
+				// 		NumSnakes:       45,
+				// 		SnakeLength:     80,
+				// 	}),
+				// },
 				// {
 				// 	Label:    "good snake settings",
 				// 	Offset:   0,
@@ -294,22 +285,22 @@ func main() {
 		ledsim.NewOutput(mirage),
 	}
 
-	genRange := func(start, end int) []int {
-		result := make([]int, end-start)
-		for i := start; i < end; i++ {
-			result[i-start] = i
-		}
-		return result
-	}
+	// genRange := func(start, end int) []int {
+	// 	result := make([]int, end-start)
+	// 	for i := start; i < end; i++ {
+	// 		result[i-start] = i
+	// 	}
+	// 	return result
+	// }
 
-	udpOutput, err := outputs.NewUDP("192.168.0.1:5050", map[string][]int{
-		"192.168.0.2:8888": genRange(0, 300),
-	})
-	if err != nil {
-		panic(err)
-	}
+	// udpOutput, err := outputs.NewUDP("192.168.0.1:5050", map[string][]int{
+	// 	"192.168.0.2:8888": genRange(0, 300),
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
+	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
 
 	executor := ledsim.NewExecutor(sys, 30, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
