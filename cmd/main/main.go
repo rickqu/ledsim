@@ -8,7 +8,6 @@ import (
 	"ledsim"
 	"ledsim/control_panel"
 	"ledsim/effects"
-	"ledsim/metrics"
 	"ledsim/mpv"
 	"ledsim/outputs"
 	"log"
@@ -23,7 +22,6 @@ import (
 )
 
 func main() {
-	metrics.StartMetrics()
 	sys := ledsim.NewSystem()
 	ledsim.LoadLEDs(sys)
 
@@ -119,25 +117,32 @@ func main() {
 				// 	Effect:   effects.NewShootingStar(effects.Vector{0, 0, 0}, effects.Vector{1, 1, 1}),
 				// },
 				{
-					Label:    "segment test",
+					Label:    "sparkle test",
 					Offset:   0,
 					Duration: time.Second * 30,
-					Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
+					// duration, baseline, deviation time.Duration, target colorful.Color
+					Effect: effects.NewSparkle(30*time.Second, time.Second*3, time.Second*3, golds[0]),
 				},
-				{
-					Label:    "good snake settings",
-					Offset:   time.Second * 30,
-					Duration: time.Second * 600,
-					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        time.Second * 30,
-						Palette:         golds,
-						Speed:           20,
-						RandomizeColors: true,
-						Head:            1,
-						NumSnakes:       45,
-						SnakeLength:     80,
-					}),
-				},
+				// {
+				// 	Label:    "segment test",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 30,
+				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
+				// },
+				// {
+				// 	Label:    "good snake settings",
+				// 	Offset:   time.Second * 30,
+				// 	Duration: time.Second * 600,
+				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+				// 		Duration:        time.Second * 30,
+				// 		Palette:         golds,
+				// 		Speed:           20,
+				// 		RandomizeColors: true,
+				// 		Head:            1,
+				// 		NumSnakes:       45,
+				// 		SnakeLength:     80,
+				// 	}),
+				// },
 				// {
 				// 	Label:    "test flood fill",
 				// 	Offset:   time.Second,
