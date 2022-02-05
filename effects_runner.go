@@ -29,7 +29,11 @@ type EffectsManager struct {
 	keyframeBuckets [][]*Keyframe // each bucket is 1 second
 	lastKeyframes   []*Keyframe
 	blacklist       map[*Keyframe]bool
+	lastLoopEnd     time.Duration
+	lastDelta       time.Duration
 }
+
+var emptyKeyframe = []*Keyframe{}
 
 var blackFrame = &Keyframe{
 	Effect: LEDEffect(func(p float64, led *LED) {
@@ -66,18 +70,14 @@ func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
 		})
 
 		keyframeBuckets = append(keyframeBuckets, bucket)
-		// bucketN := len(keyframeBuckets) - 1
-		// fmt.Println("keyframe bucket:", bucketN)
-		// for _, keyframe := range bucket {
-		// 	fmt.Println(keyframe.Label)
-		// }
-		// fmt.Println("")
 	}
 
 	return &EffectsManager{
 		keyframeBuckets: keyframeBuckets,
 		lastKeyframes:   []*Keyframe{},
 		blacklist:       make(map[*Keyframe]bool),
+		lastLoopEnd:     0,
+		lastDelta:       0,
 	}
 }
 
@@ -91,14 +91,25 @@ func isKeyframeIn(needle *Keyframe, haystack []*Keyframe) bool {
 }
 
 func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
-	bucketNum := int(delta/bucketSize) % len(r.keyframeBuckets)
+
+	var loopTime = delta - r.lastLoopEnd
+	bucketNum := int(loopTime / bucketSize)
+
+	if bucketNum == (len(r.keyframeBuckets)) {
+		r.lastLoopEnd = r.lastDelta
+		r.lastKeyframes = emptyKeyframe
+
+		// Recalculate the loopTime because we are in a new iteration of animation loop
+		loopTime = delta - r.lastLoopEnd
+		bucketNum = 0
+	}
+	r.lastDelta = delta
 
 	bucket := r.keyframeBuckets[bucketNum]
-
 	currentKeyframes := make([]*Keyframe, 0, len(bucket))
 
 	for _, keyframe := range bucket {
-		if delta >= keyframe.Offset && delta < keyframe.EndOffset() && !r.blacklist[keyframe] {
+		if loopTime >= keyframe.Offset && loopTime < keyframe.EndOffset() && !r.blacklist[keyframe] {
 			currentKeyframes = append(currentKeyframes, keyframe)
 		}
 	}
@@ -151,7 +162,7 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 			continue
 		}
 
-		progress := float64(delta-keyframe.Offset) / float64(keyframe.Duration)
+		progress := float64(loopTime-keyframe.Offset) / float64(keyframe.Duration)
 
 		func() {
 			defer func() {
