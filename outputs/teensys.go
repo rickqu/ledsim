@@ -93,15 +93,11 @@ func mapLedToOutputArray(sys *ledsim.System, teensyNetwork *TeensyNetwork) {
 		chain := teensy.Chains[led.Chain]
 
 		ledsBeforeTarget := 0
-		for i := 0; i <= chain.Pin; i++ {
-			for _, specificChain := range teensy.Chains {
-				if specificChain.Pin < i {
-					ledsBeforeTarget += specificChain.Length
-				} else if specificChain.Pin == i {
-					if specificChain.PosOnPin < chain.PosOnPin {
-						ledsBeforeTarget += specificChain.Length
-					}
-				}
+		for _, specificChain := range teensy.Chains {
+			if specificChain.Pin < chain.Pin {
+				ledsBeforeTarget += specificChain.Length
+			} else if specificChain.Pin == chain.Pin && specificChain.PosOnPin < chain.PosOnPin {
+				ledsBeforeTarget += specificChain.Length
 			}
 		}
 		if chain.Reversed {
@@ -111,16 +107,6 @@ func mapLedToOutputArray(sys *ledsim.System, teensyNetwork *TeensyNetwork) {
 		}
 		outputArrayFromMap, _ := teensyNetwork.binConns.Load(led.TeensyIp)
 		outputArray := outputArrayFromMap.(*udpOutput).outputBuff
-
-		// Our testing framework can only support
-		// 150 LEDs per pin due to powering constraints.
-		random := byte(1)
-		if ledsBeforeTarget > 149 {
-			led.Red = &random
-			led.Green = &random
-			led.Blue = &random
-			continue
-		}
 
 		led.Red = &outputArray[ledsBeforeTarget*3]
 		led.Green = &outputArray[ledsBeforeTarget*3+1]

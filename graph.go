@@ -150,6 +150,7 @@ func (g *undirectedGraph) loadTeensys() (map[string]*Teensy, map[int]string) {
 			currentPin += 1
 		}
 	}
+
 	return teensys, chainToIpMap
 }
 
