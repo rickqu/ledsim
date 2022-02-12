@@ -33,8 +33,6 @@ type EffectsManager struct {
 	lastDelta       time.Duration
 }
 
-var emptyKeyframe = []*Keyframe{}
-
 var blackFrame = &Keyframe{
 	Effect: LEDEffect(func(p float64, led *LED) {
 		led.Color = colorful.Color{0, 0, 0}
