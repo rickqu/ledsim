@@ -98,7 +98,16 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 	if bucketNum == (len(r.keyframeBuckets)) {
 
 		for _, keyFrame := range r.lastKeyframes {
-			keyFrame.Effect.OnExit(system)
+			func() {
+				defer func() {
+					if rec := recover(); rec != nil {
+						// get stack trace
+						log.Printf("warn: panic OnExit with effect %q: %v\n%s",
+							keyFrame.Label, rec, string(debug.Stack()))
+					}
+				}()
+				keyFrame.Effect.OnExit(system)
+			}()
 		}
 
 		// Recalculate the loopTime because we are in a new iteration of animation loop
