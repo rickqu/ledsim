@@ -71,12 +71,14 @@ func main() {
 		log.Fatalln(e.Start(":9000"))
 	}()
 
+	// {110, 250, 0} comes out as green, however our LEDs render it as
+	// gold. The colour we actually want is  {230, 190, 138}
 	golds := []colorful.Color{
 		// {255, 255, 0},
 		// {212, 175, 55},
 		// {207, 181, 59},
 		// {197, 179, 88},
-		{230, 190, 138},
+		{110, 250, 0},
 		// {153, 101, 21},
 		// {244, 163, 0},
 	}
