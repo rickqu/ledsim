@@ -148,7 +148,7 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 			continue
 		}
 
-		if !isKeyframeIn(keyframe, r.lastKeyframes) {
+		if !isKeyframeIn(keyframe, r.lastKeyframes) || bucketNum == 0 {
 			// entering keyframe
 			func() {
 				defer func() {
