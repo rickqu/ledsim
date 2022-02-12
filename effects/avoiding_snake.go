@@ -128,6 +128,10 @@ func NewAvoidingSnake(config *AvoidingSnakeConfig) *AvoidingSnake {
 
 func (s *AvoidingSnake) OnEnter(sys *ledsim.System) {
 	for _, snake := range s.snakes {
+		snake.comps = make([]*ledsim.LED, len(snake.comps))
+	}
+
+	for _, snake := range s.snakes {
 		m := s.ComputeScoringMap(100)
 	candidateSearch:
 		for {

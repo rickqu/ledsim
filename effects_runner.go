@@ -96,12 +96,16 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 	bucketNum := int(loopTime / bucketSize)
 
 	if bucketNum == (len(r.keyframeBuckets)) {
-		r.lastLoopEnd = r.lastDelta
-		r.lastKeyframes = emptyKeyframe
+
+		for _, keyFrame := range r.lastKeyframes {
+			keyFrame.Effect.OnExit(system)
+		}
 
 		// Recalculate the loopTime because we are in a new iteration of animation loop
 		loopTime = delta - r.lastLoopEnd
 		bucketNum = 0
+
+		r.lastLoopEnd = r.lastDelta
 	}
 	r.lastDelta = delta
 
@@ -114,19 +118,21 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 		}
 	}
 
-	for _, lastKeyframe := range r.lastKeyframes {
-		if !isKeyframeIn(lastKeyframe, currentKeyframes) && !r.blacklist[lastKeyframe] {
-			// exiting keyframe
-			func() {
-				defer func() {
-					if rec := recover(); rec != nil {
-						// get stack trace
-						log.Printf("warn: panic OnExit with effect %q: %v\n%s",
-							lastKeyframe.Label, rec, string(debug.Stack()))
-					}
+	if bucketNum != 0 {
+		for _, lastKeyframe := range r.lastKeyframes {
+			if !isKeyframeIn(lastKeyframe, currentKeyframes) && !r.blacklist[lastKeyframe] {
+				// exiting keyframe
+				func() {
+					defer func() {
+						if rec := recover(); rec != nil {
+							// get stack trace
+							log.Printf("warn: panic OnExit with effect %q: %v\n%s",
+								lastKeyframe.Label, rec, string(debug.Stack()))
+						}
+					}()
+					lastKeyframe.Effect.OnExit(system)
 				}()
-				lastKeyframe.Effect.OnExit(system)
-			}()
+			}
 		}
 	}
 
