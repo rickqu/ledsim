@@ -118,22 +118,55 @@ func main() {
 				// 	Duration: time.Second,
 				// 	Effect:   effects.NewShootingStar(effects.Vector{0, 0, 0}, effects.Vector{1, 1, 1}),
 				// },
-				{
-					Label:    "sparkle test",
-					Offset:   0,
-					Duration: time.Second * 30,
-					// duration, baseline, deviation time.Duration, target colorful.Color
-					Effect: effects.NewSparkle(30*time.Second, time.Second*3, time.Second*3, golds[0]),
-				},
 				// {
 				// 	Label:    "segment test",
 				// 	Offset:   0,
 				// 	Duration: time.Second * 30,
 				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
 				// },
+				//
+				// BEGIN My monocolour test
+				//
+				// {
+				// 	Label:    "monocolour fade in",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 3,
+				// 	Effect:   effects.NewFadeTransition(effects.FADE_IN),
+				// 	Layer:    2,
+				// },
+				// {
+				// 	Label:    "monocolour",
+				// 	Offset:   0,
+				// 	Duration: time.Second * 10,
+				// 	Effect:   effects.NewMonocolour(colorful.Color{R: 0.5, G: 0.6, B: 0.7}),
+				// },
+				// {
+				// 	Label:    "monocolour fade out",
+				// 	Offset:   7 * time.Second,
+				// 	Duration: time.Second * 3,
+				// 	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+				// 	Layer:    2,
+				// },
+				//
+				// END My monocolour test
+				//
+				{
+					Label:    "sparkle test",
+					Offset:   0,
+					Duration: time.Second * 20,
+					// duration, baseline, deviation time.Duration, target colorful.Color
+					Effect: effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, golds[0]),
+				},
+				{
+					Label:    "snake fade in",
+					Offset:   time.Second * 20,
+					Duration: time.Second * 5,
+					Effect:   effects.NewFadeTransition(effects.FADE_IN),
+					Layer:    2,
+				},
 				{
 					Label:    "good snake settings",
-					Offset:   time.Second * 30,
+					Offset:   time.Second * 20,
 					Duration: time.Second * 30,
 					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
 						Duration:        time.Second * 30,
@@ -144,6 +177,14 @@ func main() {
 						NumSnakes:       45,
 						SnakeLength:     80,
 					}),
+					Layer: 0,
+				},
+				{
+					Label:    "snake fade out",
+					Offset:   45 * time.Second,
+					Duration: time.Second * 5,
+					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+					Layer:    2,
 				},
 				// {
 				// 	Label:    "test flood fill",
