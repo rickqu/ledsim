@@ -60,13 +60,29 @@ func main() {
 		return
 	}
 
+	// For writing bytes to a file
+	//f, err := os.Create("bytes_data")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer f.Close()
+
+	// For reading bytes to a file
+	// # REPLAY CODE
+	f, err := os.Open("rgb_bytes")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
 	data, err := ioutil.ReadFile("./resources/crack_leds.txt")
 	if err != nil {
 		panic(err)
 	}
 
 	effects := []internal.Effect{
-		effects.NewVolumeAdjust(os.Args[1], false),
+		//effects.NewVolumeAdjust(os.Args[1], false),
+		&effects.DiagonalRainbow{},
 	}
 
 	// make a ring of 80 LEDs with radius 1m
@@ -129,9 +145,28 @@ func main() {
 		}
 
 		binOut := new(bytes.Buffer)
-		for _, led := range s.LEDs {
-			binOut.Write([]byte{led.R, led.G, led.B})
+
+		bytes6300 := make([]byte, 6300) // array of 6300 bytes being read in from file # REPLAY CODE
+
+		led_count := len(bytes6300) / 3 // 2100 # REPLAY CODE
+
+		_, err = f.Read(bytes6300) // # REPLAY CODE
+
+		//for _, led := range s.LEDs {
+		for i := 0; i < led_count; i++ {
+
+			//byt = append(byt, led.R)
+			//byt = append(byt, led.G)
+			//byt = append(byt, led.B)
+			R := bytes6300[i*3]   // # REPLAY CODE
+			G := bytes6300[i*3+1] // # REPLAY CODE
+			B := bytes6300[i*3+2] // # REPLAY CODE
+
+			//fmt.Printf("R: %d G: %d B: %d\n", R, G, B)
+			binOut.Write([]byte{R, G, B})
 		}
+		//f.Write(byt)
+		bytes6300 = nil
 
 		go func() {
 			connMutex.Lock()
