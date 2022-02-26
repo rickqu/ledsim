@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"ledsim"
 	"ledsim/control_panel"
-	"ledsim/control_panel/parameters"
 	"ledsim/effects"
 	"ledsim/mpv"
 	"ledsim/outputs"
@@ -116,8 +115,6 @@ func main() {
 		offsets[i] = offsets[i] * time.Second
 	}
 
-	colour := parameters.GetParameter("Colour").(*parameters.ColourParam)
-
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
@@ -201,13 +198,13 @@ func main() {
 					Label:    "segment in",
 					Offset:   offsets[3],
 					Duration: offsets[4] - offsets[3],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
+					Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
 				},
 				{
 					Label:    "segment out",
 					Offset:   offsets[4],
 					Duration: offsets[5] - offsets[4],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
+					Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
 				},
 				// {
 				// 	Label:    "test flood fill",
