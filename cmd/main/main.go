@@ -117,9 +117,6 @@ func main() {
 	}
 
 	colour := parameters.GetParameter("Colour").(*parameters.ColourParam)
-	colour.R = colour.R / 255.0
-	colour.G = colour.G / 255.0
-	colour.B = colour.B / 255.0
 
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
