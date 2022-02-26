@@ -79,6 +79,7 @@ func main() {
 		// {207, 181, 59},
 		// {197, 179, 88},
 		{110, 250, 0},
+		{110 / 10, 250 / 10, 0},
 		// {153, 101, 21},
 		// {244, 163, 0},
 	}
@@ -109,6 +110,11 @@ func main() {
 		getTimestamp = player.GetTimestamp
 	}
 
+	offsets := []time.Duration{0, 30, 60, 90, 120}
+	for i, _ := range offsets {
+		offsets[i] = offsets[i] * time.Second
+	}
+
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
@@ -125,51 +131,25 @@ func main() {
 				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
 				// },
 				//
-				// BEGIN My monocolour test
-				//
-				// {
-				// 	Label:    "monocolour fade in",
-				// 	Offset:   0,
-				// 	Duration: time.Second * 3,
-				// 	Effect:   effects.NewFadeTransition(effects.FADE_IN),
-				// 	Layer:    2,
-				// },
-				// {
-				// 	Label:    "monocolour",
-				// 	Offset:   0,
-				// 	Duration: time.Second * 10,
-				// 	Effect:   effects.NewMonocolour(colorful.Color{R: 0.5, G: 0.6, B: 0.7}),
-				// },
-				// {
-				// 	Label:    "monocolour fade out",
-				// 	Offset:   7 * time.Second,
-				// 	Duration: time.Second * 3,
-				// 	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-				// 	Layer:    2,
-				// },
-				//
-				// END My monocolour test
-				//
 				{
 					Label:    "sparkle test",
-					Offset:   0,
-					Duration: time.Second * 20,
-					// duration, baseline, deviation time.Duration, target colorful.Color
-					Effect: effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, golds[0]),
+					Offset:   offsets[0],
+					Duration: offsets[1] - offsets[0],
+					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
 				},
 				{
 					Label:    "snake fade in",
-					Offset:   time.Second * 20,
+					Offset:   offsets[1],
 					Duration: time.Second * 5,
 					Effect:   effects.NewFadeTransition(effects.FADE_IN),
 					Layer:    2,
 				},
 				{
 					Label:    "good snake settings",
-					Offset:   time.Second * 20,
-					Duration: time.Second * 30,
+					Offset:   offsets[1],
+					Duration: offsets[2] - offsets[1],
 					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        time.Second * 30,
+						Duration:        offsets[2] - offsets[1],
 						Palette:         golds,
 						Speed:           20,
 						RandomizeColors: true,
@@ -181,7 +161,35 @@ func main() {
 				},
 				{
 					Label:    "snake fade out",
-					Offset:   45 * time.Second,
+					Offset:   offsets[2] - time.Second*5,
+					Duration: time.Second * 5,
+					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+					Layer:    2,
+				},
+				{
+					Label:    "idle fade in",
+					Offset:   offsets[2],
+					Duration: time.Second * 5,
+					Effect:   effects.NewFadeTransition(effects.FADE_IN),
+					Layer:    2,
+				},
+				{
+					Label:    "idle",
+					Offset:   offsets[2],
+					Duration: offsets[3] - offsets[2],
+					Effect:   effects.NewMonocolour(golds[1]),
+					Layer:    0,
+				},
+				{
+					Label:    "idle sparkle",
+					Offset:   offsets[2],
+					Duration: offsets[3] - offsets[2],
+					Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
+					Layer:    1,
+				},
+				{
+					Label:    "idle fade out",
+					Offset:   offsets[3] - time.Second*5,
 					Duration: time.Second * 5,
 					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
 					Layer:    2,
