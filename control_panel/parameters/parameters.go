@@ -11,12 +11,12 @@ var Params = map[string]Parameter{
 		LowerBoundLabel: "Dimmer",
 		UpperBoundLabel: "Brighter",
 	},
-	"Gold": &ColourParam{
-		Name: "Gold",
+	"Colour": &ColourParam{
+		Name: "Colour",
 		Color: colorful.Color{
-			R: 230,
-			G: 190,
-			B: 138,
+			R: 200.0 / 255.0,
+			G: 250.0 / 255.0,
+			B: 0.0 / 255.0,
 		},
 	},
 	"Season": &ThemeParam{
