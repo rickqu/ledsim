@@ -10,7 +10,7 @@ import (
 )
 
 type Segment struct {
-	colorful.Color
+	*colorful.Color
 	FADE_TYPE
 
 	initialised bool
@@ -35,7 +35,7 @@ func (c *chainProgress) appendLED(led *ledsim.LED) {
 	c.leds = append(c.leds, led)
 }
 
-func NewSegment(Colour colorful.Color, fadeType FADE_TYPE) *Segment {
+func NewSegment(Colour *colorful.Color, fadeType FADE_TYPE) *Segment {
 	return &Segment{Colour, fadeType, false, make(map[int]*chainProgress), make([]int, 0)}
 }
 
@@ -61,7 +61,7 @@ func (s *Segment) Eval(progress float64, sys *ledsim.System) {
 	// if we are fading out, then we need to paint canvas with inital colour.
 	var initialColour colorful.Color
 	if s.FADE_TYPE == FADE_OUT {
-		initialColour = s.Color
+		initialColour = *s.Color
 	}
 	for _, led := range sys.LEDs {
 		led.Color = initialColour
@@ -78,7 +78,7 @@ func (s *Segment) Eval(progress float64, sys *ledsim.System) {
 			// chain is done, set it to full colour
 			for _, led := range s.chainToLeds[chain].leds {
 				if s.FADE_TYPE == FADE_IN {
-					led.Color = s.Color
+					led.Color = *s.Color
 				} else {
 					led.Color = colorful.Color{0, 0, 0}
 				}
@@ -93,6 +93,7 @@ func (s *Segment) Eval(progress float64, sys *ledsim.System) {
 	stepSize := 1.0 / float64(len(s.chainOrder))
 	startMilestone := float64(nthChain) * stepSize
 
+	// If progress factor goes beyond 1 or under 0, then we can get random flashes of colour at the end of a fade.
 	progressFactor := (progress - startMilestone) / stepSize
 	if progressFactor > 1 {
 		progressFactor = 1

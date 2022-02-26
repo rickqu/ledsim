@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"ledsim"
 	"ledsim/control_panel"
+	"ledsim/control_panel/parameters"
 	"ledsim/effects"
 	"ledsim/mpv"
 	"ledsim/outputs"
@@ -115,6 +116,11 @@ func main() {
 		offsets[i] = offsets[i] * time.Second
 	}
 
+	colour := parameters.GetParameter("Colour").(*parameters.ColourParam)
+	colour.R = colour.R / 255.0
+	colour.G = colour.G / 255.0
+	colour.B = colour.B / 255.0
+
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
@@ -136,13 +142,13 @@ func main() {
 					Label:    "segment in",
 					Offset:   0,
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSegment(golds[0], effects.FADE_IN),
+					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
 				},
 				{
 					Label:    "segment out",
 					Offset:   offsets[1],
 					Duration: offsets[2] - offsets[1],
-					Effect:   effects.NewSegment(golds[0], effects.FADE_OUT),
+					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
 				},
 				// {
 				// 	Label:    "sparkle test",
