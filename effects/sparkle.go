@@ -14,10 +14,10 @@ type Sparkle struct {
 	duration   time.Duration
 	baseline   time.Duration
 	deviation  time.Duration
-	target     colorful.Color
+	target     *colorful.Color
 }
 
-func NewSparkle(duration, baseline, deviation time.Duration, target colorful.Color) *Sparkle {
+func NewSparkle(duration, baseline, deviation time.Duration, target *colorful.Color) *Sparkle {
 	return &Sparkle{
 		duration:  duration,
 		baseline:  baseline,
@@ -63,13 +63,13 @@ func (s *Sparkle) Eval(progress float64, sys *ledsim.System) {
 			break
 		case 1:
 			// fade in
-			led.Color = ledsim.BlendRgb(led.Color, s.target, float64(locationInPhase)/float64(s.ledPeriods[i]))
+			led.Color = ledsim.BlendRgb(led.Color, *s.target, float64(locationInPhase)/float64(s.ledPeriods[i]))
 		case 2:
 			// stay on
-			led.Color = s.target
+			led.Color = *s.target
 		case 3:
 			// fade out
-			led.Color = ledsim.BlendRgb(led.Color, s.target, 1-(float64(locationInPhase)/float64(s.ledPeriods[i])))
+			led.Color = ledsim.BlendRgb(led.Color, *s.target, 1-(float64(locationInPhase)/float64(s.ledPeriods[i])))
 		}
 	}
 }

@@ -80,7 +80,7 @@ func main() {
 		// {207, 181, 59},
 		// {197, 179, 88},
 		{200, 250, 0},
-		{200 / 10, 200 / 10, 0},
+		{200 / 10, 250 / 10, 0},
 		// {153, 101, 21},
 		// {244, 163, 0},
 	}
@@ -116,7 +116,10 @@ func main() {
 		offsets[i] = offsets[i] * time.Second
 	}
 
-	colour := parameters.GetParameter("Colour").(*parameters.ColourParam)
+	varColours := []*colorful.Color{
+		&parameters.GetParameter("Colour").(*parameters.ColourParam).Color,
+		&parameters.GetParameter("Colour2").(*parameters.ColourParam).Color,
+	}
 
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
@@ -138,7 +141,7 @@ func main() {
 					Label:    "sparkle test",
 					Offset:   offsets[0],
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
+					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, varColours[0]),
 				},
 				{
 					Label:    "snake fade in",
@@ -153,7 +156,7 @@ func main() {
 					Duration: offsets[2] - offsets[1],
 					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
 						Duration:        offsets[2] - offsets[1],
-						Palette:         golds,
+						Palette:         varColours,
 						Speed:           20,
 						RandomizeColors: true,
 						Head:            1,
@@ -180,14 +183,14 @@ func main() {
 					Label:    "idle",
 					Offset:   offsets[2],
 					Duration: offsets[3] - offsets[2],
-					Effect:   effects.NewMonocolour(golds[1]),
+					Effect:   effects.NewMonocolour(varColours[1]),
 					Layer:    0,
 				},
 				{
 					Label:    "idle sparkle",
 					Offset:   offsets[2],
 					Duration: offsets[3] - offsets[2],
-					Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
+					Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, &colorful.Color{255, 255, 255}),
 					Layer:    1,
 				},
 				{
@@ -201,13 +204,13 @@ func main() {
 					Label:    "segment in",
 					Offset:   offsets[3],
 					Duration: offsets[4] - offsets[3],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
+					Effect:   effects.NewSegment(varColours[0], effects.FADE_IN),
 				},
 				{
 					Label:    "segment out",
 					Offset:   offsets[4],
 					Duration: offsets[5] - offsets[4],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
+					Effect:   effects.NewSegment(varColours[0], effects.FADE_OUT),
 				},
 				// {
 				// 	Label:    "test flood fill",
@@ -357,7 +360,7 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	// pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
 	executor := ledsim.NewExecutor(sys, 30, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},

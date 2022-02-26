@@ -13,7 +13,7 @@ import (
 
 type AvoidingSnakeInstance struct {
 	comps      []*ledsim.LED
-	color      colorful.Color
+	color      *colorful.Color
 	dur        time.Duration
 	speed      float64
 	curMove    int
@@ -29,7 +29,7 @@ type AvoidingSnake struct {
 type AvoidingSnakeConfig struct {
 	Duration        time.Duration
 	Speed           float64
-	Palette         []colorful.Color
+	Palette         []*colorful.Color
 	RandomizeColors bool
 	Head            int
 	NumSnakes       int
@@ -257,15 +257,15 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 		led := a.comps[i]
 		if i == len(a.comps)-a.head {
 			// the head
-			led.Color = ledsim.BlendRgb(led.Color, a.color, (frac / 2))
+			led.Color = ledsim.BlendRgb(led.Color, *a.color, (frac / 2))
 			continue
 		} else if i == 0 {
 			// the tail
-			led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5-(frac/2))
+			led.Color = ledsim.BlendRgb(led.Color, *a.color, 0.5-(frac/2))
 			continue
 		}
 
-		led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5)
+		led.Color = ledsim.BlendRgb(led.Color, *a.color, 0.5)
 	}
 }
 

@@ -9,10 +9,10 @@ import (
 var count int = 0
 
 type Monocolour struct {
-	colorful.Color
+	*colorful.Color
 }
 
-func NewMonocolour(Colour colorful.Color) *Monocolour {
+func NewMonocolour(Colour *colorful.Color) *Monocolour {
 	return &Monocolour{Colour}
 }
 
@@ -21,7 +21,7 @@ func (s *Monocolour) OnEnter(sys *ledsim.System) {
 
 func (s *Monocolour) Eval(progress float64, sys *ledsim.System) {
 	for _, led := range sys.LEDs {
-		led.Color = s.Color
+		led.Color = *s.Color
 	}
 }
 
