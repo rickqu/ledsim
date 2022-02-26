@@ -14,7 +14,7 @@ var Params = map[string]Parameter{
 	"Colour": &ColourParam{
 		Name: "Colour",
 		Color: colorful.Color{
-			R: 110,
+			R: 200,
 			G: 250,
 			B: 0,
 		},

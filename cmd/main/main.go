@@ -111,7 +111,7 @@ func main() {
 		getTimestamp = player.GetTimestamp
 	}
 
-	offsets := []time.Duration{0, 30, 60, 90, 120}
+	offsets := []time.Duration{0, 30, 60, 90, 120, 150}
 	for i, _ := range offsets {
 		offsets[i] = offsets[i] * time.Second
 	}
@@ -137,18 +137,11 @@ func main() {
 				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
 				// },
 				//
-
 				{
-					Label:    "segment in",
-					Offset:   0,
+					Label:    "sparkle test",
+					Offset:   offsets[0],
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
-				},
-				{
-					Label:    "segment out",
-					Offset:   offsets[1],
-					Duration: offsets[2] - offsets[1],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
+					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
 				},
 				{
 					Label:    "snake fade in",
@@ -207,7 +200,18 @@ func main() {
 					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
 					Layer:    2,
 				},
->>>>>>> parent of 7f5184d (Sparkle with background)
+				{
+					Label:    "segment in",
+					Offset:   offsets[3],
+					Duration: offsets[4] - offsets[3],
+					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
+				},
+				{
+					Label:    "segment out",
+					Offset:   offsets[4],
+					Duration: offsets[5] - offsets[4],
+					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
+				},
 				// {
 				// 	Label:    "test flood fill",
 				// 	Offset:   time.Second,
