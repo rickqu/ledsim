@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"ledsim"
 	"ledsim/control_panel"
-	"ledsim/control_panel/parameters"
 	"ledsim/effects"
 	"ledsim/mpv"
 	"ledsim/outputs"
@@ -116,226 +115,16 @@ func main() {
 		offsets[i] = offsets[i] * time.Second
 	}
 
-	colour := parameters.GetParameter("Colour").(*parameters.ColourParam)
-
 	pipeline := []ledsim.Middleware{
 		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(
 			[]*ledsim.Keyframe{
-				// {
-				// 	Label:    "shooting star test",
-				// 	Offset:   0,
-				// 	Duration: time.Second,
-				// 	Effect:   effects.NewShootingStar(effects.Vector{0, 0, 0}, effects.Vector{1, 1, 1}),
-				// },
-				// {
-				// 	Label:    "segment test",
-				// 	Offset:   0,
-				// 	Duration: time.Second * 30,
-				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
-				// },
-				//
 				{
-					Label:    "sparkle test",
+					Label:    "monocolour",
 					Offset:   offsets[0],
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
-				},
-				{
-					Label:    "snake fade in",
-					Offset:   offsets[1],
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_IN),
-					Layer:    2,
-				},
-				{
-					Label:    "good snake settings",
-					Offset:   offsets[1],
-					Duration: offsets[2] - offsets[1],
-					Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-						Duration:        offsets[2] - offsets[1],
-						Palette:         golds,
-						Speed:           20,
-						RandomizeColors: true,
-						Head:            1,
-						NumSnakes:       45,
-						SnakeLength:     80,
-					}),
-					Layer: 0,
-				},
-				{
-					Label:    "snake fade out",
-					Offset:   offsets[2] - time.Second*5,
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-					Layer:    2,
-				},
-				{
-					Label:    "idle fade in",
-					Offset:   offsets[2],
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_IN),
-					Layer:    2,
-				},
-				{
-					Label:    "idle",
-					Offset:   offsets[2],
-					Duration: offsets[3] - offsets[2],
-					Effect:   effects.NewMonocolour(golds[1]),
+					Effect:   effects.NewMonocolour(golds[0]),
 					Layer:    0,
 				},
-				{
-					Label:    "idle sparkle",
-					Offset:   offsets[2],
-					Duration: offsets[3] - offsets[2],
-					Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
-					Layer:    1,
-				},
-				{
-					Label:    "idle fade out",
-					Offset:   offsets[3] - time.Second*5,
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-					Layer:    2,
-				},
-				{
-					Label:    "segment in",
-					Offset:   offsets[3],
-					Duration: offsets[4] - offsets[3],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_IN),
-				},
-				{
-					Label:    "segment out",
-					Offset:   offsets[4],
-					Duration: offsets[5] - offsets[4],
-					Effect:   effects.NewSegment(&colour.Color, effects.FADE_OUT),
-				},
-				// {
-				// 	Label:    "test flood fill",
-				// 	Offset:   time.Second,
-				// 	Duration: time.Second * 2,
-				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutFade, 0.5, 0.9, 50,
-				// 		ease.OutExpo),
-				// },
-				// {
-				// 	Label:    "testing falling beads",
-				// 	Offset:   0,
-				// 	Duration: time.Second * 30,
-				// 	Effect:   effects.NewFallingBeads(),
-				// },
-				// {
-				// 	Label:    "good snake settings",
-				// 	Offset:   0,
-				// 	Duration: time.Minute * 5,
-				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-				// 		Duration:        time.Minute * 5,
-				// 		Palette:         golds,
-				// 		Speed:           20,
-				// 		RandomizeColors: true,
-				// 		Head:            1,
-				// 		NumSnakes:       45,
-				// 		SnakeLength:     80,
-				// 	}),
-				// },
-				// {
-				// 	Label:    "good snake settings",
-				// 	Offset:   0,
-				// 	Duration: time.Minute * 5,
-				// 	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-				// 		Duration:        time.Minute * 5,
-				// 		Palette:         golds,
-				// 		Speed:           20,
-				// 		RandomizeColors: true,
-				// 		Head:            1,
-				// 		NumSnakes:       45,
-				// 		SnakeLength:     80,
-				// 	}),
-				// },
-				// {
-				// 	Label:    "display white for 10 seconds as background layer",
-				// 	Offset:   0,                // start at 0 seconds
-				// 	Duration: time.Second * 10, // end at 10 seconds
-				// 	Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-				// 		led.Color = colorful.Color{led.X * (1 - p), led.Y * (1 - p), led.Z * (1 - p)} // just make all LEDs white
-				// 	}),
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    1,
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    2,
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    3,
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    1,
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    2,
-				// },
-				// {
-				// 	Label:    "snake effect",
-				// 	Offset:   0,
-				// 	Duration: time.Hour,
-				// 	Effect:   effects.NewSnake(time.Hour, 50, golds[rand.Intn(len(golds))]),
-				// 	Layer:    3,
-				// },
-				// {
-				// 	Label:    "display white for 10 seconds as background layer",
-				// 	Offset:   0,                   // start at 0 seconds
-				// 	Duration: time.Second * 10000, // end at 10 seconds
-				// 	Effect: ledsim.LEDEffect(func(p float64, led *ledsim.LED) {
-				// 		led.Color = colorful.Color{led.X, led.Y, led.Z} // just make all LEDs white
-				// 	}),
-				// },
-				// {
-				// 	Label:    "flash blue 10 times as foreground layer",
-				// 	Offset:   0,                // start at 0 seconds
-				// 	Duration: time.Second * 10, // end at 10 seconds
-				// 	Effect: ledsim.NewBlendingEffect(ledsim.BlendableEffectFunc(func(p float64, led *ledsim.LED) (colorful.Color, float64) { // create a blendable effect (function)
-				// 		return colorful.Color{0, 0, 1}, p // blue, with p (progress, from [0..1] representing the progress of the animation) as the blending factor
-				// 	}), ledsim.BlendLuvLCh). // use LuvLCh blending
-				// 					WithEasing(ease.OutCubic). // ease the progress function with OutCubic
-				// 					WithRepetition(20, true),  // repeat 10 times, with reversing (so it animates the flashing on and flashing off)
-				// 	Layer: 1, // render this after the white (which is layer 0)
-				// },
-				// {
-				// 	Label:    "red",
-				// 	Offset:   time.Second * 10,
-				// 	Duration: time.Minute,
-				// 	Effect: ledsim.NewBlendingEffect(ledsim.BlendableEffectFunc(func(p float64, led *ledsim.LED) (colorful.Color, float64) {
-				// 		return colorful.Color{1, 0, 0}, 1
-				// 	}), ledsim.BlendLuvLCh),
-				// },
-				// {
-				// 	Label:    "green",
-				// 	Offset:   time.Second * 10,
-				// 	Duration: time.Minute,
-				// 	Effect: ledsim.NewBlendingEffect(ledsim.BlendableEffectFunc(func(p float64, led *ledsim.LED) (colorful.Color, float64) {
-				// 		return colorful.Color{0, 1, 0}, 0.5
-				// 	}), ledsim.BlendLuvLCh),
-				// },
 			},
 		), getTimestamp),
 		ledsim.NewOutput(mirage),
