@@ -131,12 +131,20 @@ func main() {
 				// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
 				// },
 				//
+
 				{
-					Label:    "sparkle test",
-					Offset:   offsets[0],
+					Label:    "segment in",
+					Offset:   0,
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
+					Effect:   effects.NewSegment(golds[0], effects.FADE_OUT, 0),
 				},
+
+				// {
+				// 	Label:    "sparkle test",
+				// 	Offset:   offsets[0],
+				// 	Duration: offsets[1] - offsets[0],
+				// 	Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
+				// },
 				// {
 				// 	Label:    "snake fade in",
 				// 	Offset:   time.Second * 20,
@@ -166,34 +174,35 @@ func main() {
 				// 	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
 				// 	Layer:    2,
 				// },
-				{
-					Label:    "idle fade in",
-					Offset:   time.Second * 20,
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_IN),
-					Layer:    2,
-				},
-				{
-					Label:    "idle",
-					Offset:   time.Second * 20,
-					Duration: time.Second * 30,
-					Effect:   effects.NewMonocolour(golds[1]),
-					Layer:    0,
-				},
-				{
-					Label:    "idle sparkle",
-					Offset:   time.Second * 20,
-					Duration: time.Second * 30,
-					Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
-					Layer:    1,
-				},
-				{
-					Label:    "idle fade out",
-					Offset:   45 * time.Second,
-					Duration: time.Second * 5,
-					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-					Layer:    2,
-				},
+				// {
+				// 	Label:    "idle fade in",
+				// 	Offset:   time.Second * 20,
+				// 	Duration: time.Second * 5,
+				// 	Effect:   effects.NewFadeTransition(effects.FADE_IN),
+				// 	Layer:    2,
+				// },
+				// {
+				// 	Label:    "idle",
+				// 	Offset:   time.Second * 20,
+				// 	Duration: time.Second * 30,
+				// 	Effect:   effects.NewMonocolour(golds[1]),
+				// 	Layer:    0,
+				// },
+				// {
+				// 	Label:    "idle sparkle",
+				// 	Offset:   time.Second * 20,
+				// 	Duration: time.Second * 30,
+				// 	Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
+				// 	Layer:    1,
+				// },
+				// {
+				// 	Label:    "idle fade out",
+				// 	Offset:   45 * time.Second,
+				// 	Duration: time.Second * 5,
+				// 	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+				// 	Layer:    2,
+				// },
+
 				// {
 				// 	Label:    "test flood fill",
 				// 	Offset:   time.Second,
@@ -207,21 +216,6 @@ func main() {
 				// 	Offset:   0,
 				// 	Duration: time.Second * 30,
 				// 	Effect:   effects.NewFallingBeads(),
-				// },
-				// {
-				// 	Label:    "test flood fill",
-				// 	Offset:   time.Second,
-				// 	Duration: time.Second * 2,
-				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutFade, 0.5, 0.9, 50,
-				// 		ease.OutExpo),
-				// },
-				// {
-				// 	Label:    "test flood fill",
-				// 	Offset:   time.Second,
-				// 	Duration: time.Second * 2,
-				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5, 0.9, 50),
 				// },
 				// {
 				// 	Label:    "good snake settings",
