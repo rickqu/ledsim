@@ -136,9 +136,14 @@ func main() {
 					Label:    "segment in",
 					Offset:   0,
 					Duration: offsets[1] - offsets[0],
-					Effect:   effects.NewSegment(golds[0], effects.FADE_OUT, 0),
+					Effect:   effects.NewSegment(golds[0], effects.FADE_IN),
 				},
-
+				{
+					Label:    "segment out",
+					Offset:   offsets[1],
+					Duration: offsets[2] - offsets[1],
+					Effect:   effects.NewSegment(golds[0], effects.FADE_OUT),
+				},
 				// {
 				// 	Label:    "sparkle test",
 				// 	Offset:   offsets[0],

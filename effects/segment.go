@@ -14,11 +14,6 @@ type Segment struct {
 	FADE_TYPE
 
 	initialised bool
-
-	// During a fade out, we need to light up all leds before we start segment fade. In that case
-	// we want to pause the animation for a bit until the fade in is complete.
-	internalOffset time.Duration
-
 	chainToLeds map[int]*chainProgress
 	chainOrder  []int
 }
@@ -33,15 +28,15 @@ func newChainProgress() *chainProgress {
 }
 
 func (c *chainProgress) isDone() bool {
-	return c.progress > 1.0
+	return c.progress >= 1.0
 }
 
 func (c *chainProgress) appendLED(led *ledsim.LED) {
 	c.leds = append(c.leds, led)
 }
 
-func NewSegment(Colour colorful.Color, fadeType FADE_TYPE, internalOffset time.Duration) *Segment {
-	return &Segment{Colour, fadeType, false, internalOffset, make(map[int]*chainProgress), make([]int, 0)}
+func NewSegment(Colour colorful.Color, fadeType FADE_TYPE) *Segment {
+	return &Segment{Colour, fadeType, false, make(map[int]*chainProgress), make([]int, 0)}
 }
 
 func (s *Segment) OnEnter(sys *ledsim.System) {
@@ -99,6 +94,11 @@ func (s *Segment) Eval(progress float64, sys *ledsim.System) {
 	startMilestone := float64(nthChain) * stepSize
 
 	progressFactor := (progress - startMilestone) / stepSize
+	if progressFactor > 1 {
+		progressFactor = 1
+	} else if progressFactor < 0 {
+		progressFactor = 0
+	}
 
 	// fmt.Printf("Progress factor %f\n", progressFactor)
 	var colourIntensity float64
