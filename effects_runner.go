@@ -1,6 +1,7 @@
 package ledsim
 
 import (
+	"fmt"
 	"log"
 	"runtime/debug"
 	"sort"
@@ -26,11 +27,12 @@ func (k *Keyframe) EndOffset() time.Duration {
 }
 
 type EffectsManager struct {
-	keyframeBuckets [][]*Keyframe // each bucket is 1 second
-	lastKeyframes   []*Keyframe
-	blacklist       map[*Keyframe]bool
-	lastLoopEnd     time.Duration
-	lastDelta       time.Duration
+	keyframeBuckets  [][]*Keyframe // each bucket is 1 second
+	lastKeyframes    []*Keyframe
+	blacklist        map[*Keyframe]bool
+	lastLoopEnd      time.Duration
+	lastDelta        time.Duration
+	justFinishedLoop bool
 }
 
 var blackFrame = &Keyframe{
@@ -71,11 +73,12 @@ func NewEffectsManager(keyframes []*Keyframe) *EffectsManager {
 	}
 
 	return &EffectsManager{
-		keyframeBuckets: keyframeBuckets,
-		lastKeyframes:   []*Keyframe{},
-		blacklist:       make(map[*Keyframe]bool),
-		lastLoopEnd:     0,
-		lastDelta:       0,
+		keyframeBuckets:  keyframeBuckets,
+		lastKeyframes:    []*Keyframe{},
+		blacklist:        make(map[*Keyframe]bool),
+		lastLoopEnd:      0,
+		lastDelta:        0,
+		justFinishedLoop: false,
 	}
 }
 
@@ -88,33 +91,26 @@ func isKeyframeIn(needle *Keyframe, haystack []*Keyframe) bool {
 	return false
 }
 
+var emptyKeyFrames = make([]*Keyframe, 1)
+
 func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 
 	var loopTime = delta - r.lastLoopEnd
 	bucketNum := int(loopTime / bucketSize)
 
 	if bucketNum == (len(r.keyframeBuckets)) {
-
 		for _, keyFrame := range r.lastKeyframes {
-			func() {
-				defer func() {
-					if rec := recover(); rec != nil {
-						// get stack trace
-						log.Printf("warn: panic OnExit with effect %q: %v\n%s",
-							keyFrame.Label, rec, string(debug.Stack()))
-					}
-				}()
-				keyFrame.Effect.OnExit(system)
-			}()
+			r.exitAnimations(keyFrame, system)
 		}
 
 		// Recalculate the loopTime because we are in a new iteration of animation loop
+		r.lastLoopEnd = r.lastDelta
 		loopTime = delta - r.lastLoopEnd
 		bucketNum = 0
-
-		r.lastLoopEnd = r.lastDelta
 	}
 	r.lastDelta = delta
+
+	fmt.Println(loopTime)
 
 	bucket := r.keyframeBuckets[bucketNum]
 	currentKeyframes := make([]*Keyframe, 0, len(bucket))
@@ -125,20 +121,10 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 		}
 	}
 
-	if bucketNum != 0 {
+	if !r.justFinishedLoop {
 		for _, lastKeyframe := range r.lastKeyframes {
 			if !isKeyframeIn(lastKeyframe, currentKeyframes) && !r.blacklist[lastKeyframe] {
-				// exiting keyframe
-				func() {
-					defer func() {
-						if rec := recover(); rec != nil {
-							// get stack trace
-							log.Printf("warn: panic OnExit with effect %q: %v\n%s",
-								lastKeyframe.Label, rec, string(debug.Stack()))
-						}
-					}()
-					lastKeyframe.Effect.OnExit(system)
-				}()
+				r.exitAnimations(lastKeyframe, system)
 			}
 		}
 	}
@@ -148,24 +134,10 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 			continue
 		}
 
-		if !isKeyframeIn(keyframe, r.lastKeyframes) || bucketNum == 0 {
-			// entering keyframe
-			func() {
-				defer func() {
-					if rec := recover(); rec != nil {
-						log.Printf("warn: panic OnEnter with effect %q: %v\n%s",
-							keyframe.Label, rec, string(debug.Stack()))
-						log.Printf("warn: %q will be blacklisted", keyframe.Label)
-						r.blacklist[keyframe] = true
-					}
-				}()
-
-				keyframe.Effect.OnEnter(system)
-			}()
+		if !isKeyframeIn(keyframe, r.lastKeyframes) || r.justFinishedLoop {
+			r.enterAnimation(keyframe, system)
 		}
 	}
-
-	r.lastKeyframes = currentKeyframes
 
 	// Clear canvas before running other animations
 	blackFrame.Effect.Eval(0, system)
@@ -177,19 +149,47 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 
 		progress := float64(loopTime-keyframe.Offset) / float64(keyframe.Duration)
 
-		func() {
-			defer func() {
-				if rec := recover(); rec != nil {
-					log.Printf("warn: panic Eval with effect %q: %v\n%s",
-						keyframe.Label, rec, string(debug.Stack()))
-					log.Printf("warn: %q will be blacklisted", keyframe.Label)
-					r.blacklist[keyframe] = true
-				}
-			}()
-
-			keyframe.Effect.Eval(progress, system)
-		}()
+		r.runAnimation(keyframe, progress, system)
 	}
+
+	r.lastKeyframes = currentKeyframes
+	r.justFinishedLoop = false
+}
+
+func (r *EffectsManager) enterAnimation(keyframe *Keyframe, system *System) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			log.Printf("warn: panic OnEnter with effect %q: %v\n%s",
+				keyframe.Label, rec, string(debug.Stack()))
+			log.Printf("warn: %q will be blacklisted", keyframe.Label)
+			r.blacklist[keyframe] = true
+		}
+	}()
+	keyframe.Effect.OnEnter(system)
+}
+
+func (r *EffectsManager) runAnimation(keyframe *Keyframe, progress float64, system *System) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			log.Printf("warn: panic Eval with effect %q: %v\n%s",
+				keyframe.Label, rec, string(debug.Stack()))
+			log.Printf("warn: %q will be blacklisted", keyframe.Label)
+			r.blacklist[keyframe] = true
+		}
+	}()
+
+	keyframe.Effect.Eval(progress, system)
+}
+
+func (r *EffectsManager) exitAnimations(keyframe *Keyframe, system *System) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			// get stack trace
+			log.Printf("warn: panic OnExit with effect %q: %v\n%s",
+				keyframe.Label, rec, string(debug.Stack()))
+		}
+	}()
+	keyframe.Effect.OnExit(system)
 }
 
 type EffectsRunner struct {
