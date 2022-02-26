@@ -126,8 +126,8 @@ func main() {
 			[]*ledsim.Keyframe{
 				{
 					Label:    "idle",
-					Offset:   offsets[2],
-					Duration: offsets[3] - offsets[2],
+					Offset:   offsets[0],
+					Duration: offsets[1] - offsets[0],
 					Effect:   effects.NewMonocolour(varColours[0]),
 					Layer:    0,
 				},
