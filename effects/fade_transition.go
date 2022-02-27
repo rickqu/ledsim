@@ -6,13 +6,6 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-type FADE_TYPE int
-
-const (
-	FADE_IN FADE_TYPE = iota
-	FADE_OUT
-)
-
 type FadeTransition struct {
 	fadeType FADE_TYPE
 }

@@ -1,7 +1,6 @@
 package ledsim
 
 import (
-	"fmt"
 	"log"
 	"runtime/debug"
 	"sort"
@@ -109,8 +108,6 @@ func (r *EffectsManager) Evaluate(system *System, delta time.Duration) {
 		bucketNum = 0
 	}
 	r.lastDelta = delta
-
-	fmt.Println(loopTime)
 
 	bucket := r.keyframeBuckets[bucketNum]
 	currentKeyframes := make([]*Keyframe, 0, len(bucket))
