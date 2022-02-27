@@ -1,7 +1,6 @@
 package effects
 
 import (
-	"fmt"
 	"ledsim"
 	"math"
 	"math/rand"
@@ -84,7 +83,7 @@ func (d *Dissolve) Eval(progress float64, sys *ledsim.System) {
 				remove(d.remaining, led.ID)
 				if d.remCount > 0 {
 					d.remCount--
-					fmt.Println("remcount is: ", d.remCount)
+					// fmt.Println("remcount is: ", d.remCount)
 				}
 			} else {
 				led.Color = ledsim.BlendRgb(led.Color, d.reqColor, t/period)
@@ -107,7 +106,7 @@ func (d *Dissolve) Eval(progress float64, sys *ledsim.System) {
 			var randLedIndx int
 
 			if d.remCount == 0 {
-				fmt.Println("remCount is 0")
+				// fmt.Println("remCount is 0")
 				break
 			} else if d.remCount < 100 {
 				randLedIndx = d.remaining[0]

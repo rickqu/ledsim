@@ -140,20 +140,20 @@ func main() {
 					Label:    "Dissolve test",
 					Offset:   10,
 					Duration: time.Second * 40,
-					Effect:   effects.NewDissolve(time.Second*40, colorful.Color{0, 0, 0}, 90, 0.7),
+					Effect:   effects.NewDissolve(time.Second*40, colorful.Color{0, 0, 0}, 60, 0.3),
 				},
-				{
-					Label:    "segment in",
-					Offset:   offsets[3],
-					Duration: offsets[4] - offsets[3],
-					Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
-				},
-				{
-					Label:    "segment out",
-					Offset:   offsets[4],
-					Duration: offsets[5] - offsets[4],
-					Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
-				},
+				// {
+				// 	Label:    "segment in",
+				// 	Offset:   offsets[3],
+				// 	Duration: offsets[4] - offsets[3],
+				// 	Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
+				// },
+				// {
+				// 	Label:    "segment out",
+				// 	Offset:   offsets[4],
+				// 	Duration: offsets[5] - offsets[4],
+				// 	Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
+				// },
 				// {
 				// 	Label:    "sparkle test",
 				// 	Offset:   offsets[0],
