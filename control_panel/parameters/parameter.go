@@ -60,7 +60,7 @@ func GetArtworkInfo() ArtworkInfo {
 }
 
 func GetParameter(name string) Parameter {
-	if paramToReturn, ok := params[name]; !ok {
+	if paramToReturn, ok := params[name]; ok {
 		return paramToReturn
 	} else {
 		panic("Parameter " + name + " not found")
@@ -129,5 +129,8 @@ func updateColourFromInput(colourParam *ColourParam, inputColour map[string]inte
 	if !ok {
 		return errors.New("Failed to parse value for colour component B")
 	}
+	colourParam.R = colourParam.R / 255.0
+	colourParam.G = colourParam.G / 255.0
+	colourParam.B = colourParam.B / 255.0
 	return nil
 }

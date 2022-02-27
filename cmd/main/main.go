@@ -78,8 +78,8 @@ func main() {
 		// {212, 175, 55},
 		// {207, 181, 59},
 		// {197, 179, 88},
-		{110, 250, 0},
-		{110 / 10, 250 / 10, 0},
+		{250, 130, 0},
+		{250 / 10, 130 / 10, 0},
 		// {153, 101, 21},
 		// {244, 163, 0},
 	}
@@ -110,7 +110,7 @@ func main() {
 		getTimestamp = player.GetTimestamp
 	}
 
-	offsets := []time.Duration{0, 30, 60, 90, 120}
+	offsets := []time.Duration{0, 30, 60, 90, 120, 150}
 	for i, _ := range offsets {
 		offsets[i] = offsets[i] * time.Second
 	}
@@ -194,6 +194,18 @@ func main() {
 					Effect:   effects.NewFadeTransition(effects.FADE_OUT),
 					Layer:    2,
 				},
+				{
+					Label:    "segment in",
+					Offset:   offsets[3],
+					Duration: offsets[4] - offsets[3],
+					Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
+				},
+				{
+					Label:    "segment out",
+					Offset:   offsets[4],
+					Duration: offsets[5] - offsets[4],
+					Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
+				},
 				// {
 				// 	Label:    "test flood fill",
 				// 	Offset:   time.Second,
@@ -207,21 +219,6 @@ func main() {
 				// 	Offset:   0,
 				// 	Duration: time.Second * 30,
 				// 	Effect:   effects.NewFallingBeads(),
-				// },
-				// {
-				// 	Label:    "test flood fill",
-				// 	Offset:   time.Second,
-				// 	Duration: time.Second * 2,
-				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutFade, 0.5, 0.9, 50,
-				// 		ease.OutExpo),
-				// },
-				// {
-				// 	Label:    "test flood fill",
-				// 	Offset:   time.Second,
-				// 	Duration: time.Second * 2,
-				// 	Effect: effects.NewFloodFill(sys.DebugGetLEDByCoord(0.5, 0.0, 0.5),
-				// 		100, colorful.Color{0, 1, 0}, effects.FadeOutRipple, 0.5, 0.9, 50),
 				// },
 				// {
 				// 	Label:    "good snake settings",
