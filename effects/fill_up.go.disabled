@@ -1,0 +1,67 @@
+package effects
+
+import (
+	"ledsim"
+	"sort"
+	"time"
+
+	"github.com/lucasb-eyer/go-colorful"
+)
+
+type FillUp struct {
+	upDuration      time.Duration
+	fadeOutDuration time.Duration
+	floodFills      []*FloodFill
+}
+
+// NewFillUp creates an effect that flood fills from LEDs at the bottom.
+// If numBottomLEDs is
+func NewFillUp(upDuration, fadeOutDuration time.Duration,
+	numBottomLEDs int, target colorful.Color) *FillUp {
+	return &FillUp{
+		upDuration:      upDuration,
+		fadeOutDuration: fadeOutDuration,
+	}
+}
+
+func (s *FillUp) OnEnter(sys *ledsim.System) {
+	// determine starting locations
+
+	allLEDs := sys.LEDs
+	sort.Slice(allLEDs, func(i, j int) bool {
+		return allLEDs[i].Z < allLEDs[j].Z
+	})
+
+	var bottomLEDs []*sys.LED
+
+	for _, led := range allLEDs {
+		dist := closestTo(bottomLEDs, led)
+		if dist > 0.02 {
+			bottomLEDs = append(bottomLEDs, led)
+		}
+	}
+}
+
+func closestTo(haystack []*sys.LED, needle *sys.LED) float64 {
+	var minMagnitude float64 = 1e5
+	for _, led := range haystack {
+		vec := Vector{X: led.X, Y: led.Y, Z: led.Z}.
+			Sub(Vector{X: needle.X, Y: needle.Y, Z: needle.Z})
+		mag := vec.Magnitude()
+		if mag < minMagnitude {
+			minMagnitude = mag
+		}
+	}
+
+	return minMagnitude
+}
+
+func (s *FillUp) Eval(progress float64, sys *ledsim.System) {
+
+}
+
+func (s *FillUp) OnExit(sys *ledsim.System) {
+
+}
+
+var _ ledsim.Effect = (*FillUp)(nil)
