@@ -16,7 +16,7 @@ type udpOutput struct {
 }
 
 const TARGET_PORT = 5151
-const SERVER_PORT = 900
+const SERVER_PORT = 1200
 
 type TeensyNetwork struct {
 	outputConn *net.UDPConn

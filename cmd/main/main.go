@@ -1,13 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	_ "embed"
 	"errors"
 	"fmt"
 	"ledsim"
 	"ledsim/control_panel"
 	"ledsim/effects"
+	"ledsim/generator"
 	"ledsim/mpv"
 	"ledsim/outputs"
 	"log"
@@ -35,6 +36,15 @@ func main() {
 	} else {
 		fmt.Println("warn: running without audio/mpv")
 	}
+
+	timings, err := generator.ParseTimings(bytes.NewReader(ledsim.TimingData))
+	if err != nil {
+		panic(fmt.Errorf("parse timings: %w", err))
+	}
+
+	// gen := generator.NewGenerator([]generator.GeneratableEffect{})
+	// keyframes := gen.Generate(timings, time.Now().UnixNano()) // generate some effects
+	// _ = keyframes
 
 	e := echo.New()
 
