@@ -242,6 +242,7 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 
 	// move the snake
 	intMov, frac := math.Modf(movement)
+	_ = frac
 	for i := 0; i < int(intMov)-a.curMove; i++ {
 		if !a.step(sys, m) {
 			// reverse direction yolo
@@ -261,15 +262,20 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 		// 	led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, (frac / 2))
 		// 	continue
 		// } else
-		if i == 0 {
-			// the tail
-			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5-(frac/2))
-			continue
-		}
+		// if i == 0 {
+		// 	// the tail
+		// 	led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5-(frac/2))
+		// 	continue
+		// }
 
 		distFromHead := (len(a.comps) - a.head - i)
 		if distFromHead <= 10 {
 			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 1-(float64(distFromHead)/20.0))
+		}
+
+		distFromTail := i
+		if distFromTail <= 10 {
+			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, (float64(distFromTail) / 20.0))
 		}
 
 		led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5)
@@ -296,8 +302,10 @@ func AvoidingSnakeGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Ran
 			Offset:   0,
 			Duration: fadeIn + fadeOut + effect,
 			Effect: NewAvoidingSnake(&AvoidingSnakeConfig{
-				Duration:        fadeIn + fadeOut + effect,
-				Palette:         Golds,
+				Duration: fadeIn + fadeOut + effect,
+				Palette: []colorful.Color{
+					Golds[rng.Intn(len(Golds))],
+				},
 				Speed:           20,
 				RandomizeColors: true,
 				Head:            1,

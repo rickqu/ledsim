@@ -87,6 +87,7 @@ func (s *Sparkle) OnExit(sys *ledsim.System) {
 var _ ledsim.Effect = (*Sparkle)(nil)
 
 func SparkleGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
+	gold := Golds[rand.Intn(len(Golds))]
 	return []*ledsim.Keyframe{
 		{
 			Label:    "Sparkle_Main_" + uuid.New().String(),
@@ -94,7 +95,7 @@ func SparkleGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*
 			Duration: fadeIn + fadeOut + effect,
 			Effect: NewSparkle(fadeIn+fadeOut+effect, 2*time.Second, 1500*time.Millisecond,
 				func() colorful.Color {
-					return Golds[rand.Intn(len(Golds))]
+					return gold
 				}),
 			Layer: 1,
 		},
