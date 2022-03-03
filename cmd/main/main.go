@@ -399,7 +399,7 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	//pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
 	executor := ledsim.NewExecutor(sys, frameRate, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
@@ -432,27 +432,29 @@ func main() {
 
 	log.Println("running")
 
-	go func() {
-		t := time.NewTicker(time.Millisecond * 500)
-		for {
-			select {
-			case <-t.C:
-				dur, err := player.GetTimestamp()
-				if err != nil {
-					continue
-				}
+	if player != nil {
+		go func() {
+			t := time.NewTicker(time.Millisecond * 500)
+			for {
+				select {
+				case <-t.C:
+					dur, err := player.GetTimestamp()
+					if err != nil {
+						continue
+					}
 
-				if dur >= 642*time.Second {
-					log.Println("reached end of file, quitting...")
-					cancel()
+					if dur >= 642*time.Second {
+						log.Println("reached end of file, quitting...")
+						cancel()
+						return
+					}
+				case <-ctx.Done():
+					t.Stop()
 					return
 				}
-			case <-ctx.Done():
-				t.Stop()
-				return
 			}
-		}
-	}()
+		}()
+	}
 
 	err = executor.Run(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
