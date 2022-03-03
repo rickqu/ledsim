@@ -71,7 +71,7 @@ func (p *Pulse) Eval(progress float64, sys *ledsim.System) {
 
 func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
 	totalTime := fadeIn + effect + fadeOut
-	repeats := math.Round(float64(totalTime) / float64(StandardPeriod/2))
+	repeats := math.Round(float64(totalTime) / float64(StandardPeriod/3))
 	playTime := time.Duration(float64(totalTime) / repeats)
 
 	var keyframes []*ledsim.Keyframe
@@ -102,8 +102,8 @@ func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*le
 				Duration: playTime,
 				Effect: &Pulse{
 					Dur:         playTime,
-					BaseBright:  0.2,
-					MaxBright:   0.8,
+					BaseBright:  0.05,
+					MaxBright:   0.9,
 					TargetColor: col,
 					LoDur:       0,
 					HiDur:       0,
