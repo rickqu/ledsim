@@ -1,17 +1,21 @@
 package effects
 
 import (
-	"ledsim"
 	"log"
+	"math"
 	"math/rand"
+	"strconv"
 	"time"
 
+	"ledsim"
+
+	"github.com/google/uuid"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
 type Segment struct {
 	*colorful.Color
-	FADE_TYPE
+	FADE_TYPE FADE_TYPE
 
 	initialised bool
 	chainToLeds map[int]*chainProgress
@@ -35,8 +39,8 @@ func (c *chainProgress) appendLED(led *ledsim.LED) {
 	c.leds = append(c.leds, led)
 }
 
-func NewSegment(Colour *colorful.Color, fadeType FADE_TYPE) *Segment {
-	return &Segment{Colour, fadeType, false, make(map[int]*chainProgress), make([]int, 0)}
+func NewSegment(c *colorful.Color, fadeType FADE_TYPE) *Segment {
+	return &Segment{c, fadeType, false, make(map[int]*chainProgress), make([]int, 0)}
 }
 
 func (s *Segment) OnEnter(sys *ledsim.System) {
@@ -121,4 +125,34 @@ func (s *Segment) OnExit(sys *ledsim.System) {
 	for _, chain := range s.chainToLeds {
 		chain.progress = 0
 	}
+}
+
+func SegmentGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
+	totalTime := fadeIn + effect + fadeOut
+	// target each fade to be about 15 seconds
+	repeats := math.Round(float64(totalTime) / float64(15 * time.Second))
+	playTime := time.Duration(float64(totalTime) / repeats)
+
+	var keyframes []*ledsim.Keyframe
+
+	for i := 0; i < int(repeats); i++ {
+		col := Golds[rng.Intn(len(Golds))]
+
+		keyframes = append(keyframes,
+			&ledsim.Keyframe{
+				Label:    "Segment_MainIn_" + strconv.Itoa(i) + "_" + uuid.New().String(),
+				Offset:   time.Duration(i) * playTime,
+				Duration: playTime / 2,
+				Effect:   NewSegment(&col, FADE_IN),
+			},
+			&ledsim.Keyframe{
+				Label:    "Segment_MainOut_" + strconv.Itoa(i) + "_" + uuid.New().String(),
+				Offset:   time.Duration(i)*playTime + (playTime / 2),
+				Duration: playTime / 2,
+				Effect:   NewSegment(&col, FADE_OUT),
+			},
+		)
+	}
+
+	return keyframes
 }

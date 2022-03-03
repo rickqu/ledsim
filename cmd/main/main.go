@@ -5,22 +5,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ledsim"
-	"ledsim/control_panel"
-	"ledsim/effects"
-	"ledsim/generator"
-	"ledsim/mpv"
-	"ledsim/outputs"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"ledsim"
+	"ledsim/control_panel"
+	"ledsim/effects"
+	"ledsim/generator"
+	"ledsim/mpv"
+	"ledsim/outputs"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/lucasb-eyer/go-colorful"
 )
+
+const frameRate = 30
 
 func main() {
 	sys := ledsim.NewSystem()
@@ -30,11 +33,12 @@ func main() {
 	var err error
 	if len(os.Args) >= 2 {
 		player, err = mpv.NewPlayer(os.Args[1], len(os.Args) >= 3)
+		defer player.Close()
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		fmt.Println("warn: running without audio/mpv")
+		log.Println("warn: running without audio/mpv")
 	}
 
 	timings, err := generator.ParseTimings(bytes.NewReader(ledsim.TimingData))
@@ -42,9 +46,14 @@ func main() {
 		panic(fmt.Errorf("parse timings: %w", err))
 	}
 
-	// gen := generator.NewGenerator([]generator.GeneratableEffect{})
-	// keyframes := gen.Generate(timings, time.Now().UnixNano()) // generate some effects
-	// _ = keyframes
+	gen := generator.NewGenerator([]generator.GeneratableEffect{
+		effects.AvoidingSnakeGenerator,
+		effects.SparkleGenerator,
+		effects.SegmentGenerator,
+		effects.PulseGenerator,
+		effects.FillUpGenerator,
+	})
+	keyframes := gen.Generate(timings, time.Now().UnixNano()) // generate some effects
 
 	e := echo.New()
 
@@ -99,7 +108,7 @@ func main() {
 		gold.G = gold.G / 255.0
 		gold.B = gold.B / 255.0
 		golds[i] = gold
-		// fmt.Println(gold)
+		// log.Println(gold)
 	}
 
 	// f, ferr := os.Create("./cpu.prof")
@@ -112,7 +121,7 @@ func main() {
 	// 	time.Sleep(time.Second * 10)
 	// 	pprof.StopCPUProfile()
 	// 	f.Close()
-	// 	fmt.Println("profile complete")
+	// 	log.Println("profile complete")
 	// }()
 
 	var getTimestamp func() (time.Duration, error)
@@ -139,81 +148,81 @@ func main() {
 		// 	Effect:   effects.NewSegmentShift(time.Second*5, 50, 30, 70, golds[0]),
 		// },
 		//
-		{
-			Label:    "sparkle test",
-			Offset:   offsets[0],
-			Duration: offsets[1] - offsets[0],
-			Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
-		},
-		{
-			Label:    "snake fade in",
-			Offset:   offsets[1],
-			Duration: time.Second * 5,
-			Effect:   effects.NewFadeTransition(effects.FADE_IN),
-			Layer:    2,
-		},
-		{
-			Label:    "good snake settings",
-			Offset:   offsets[1],
-			Duration: offsets[2] - offsets[1],
-			Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
-				Duration:        offsets[2] - offsets[1],
-				Palette:         golds,
-				Speed:           20,
-				RandomizeColors: true,
-				Head:            1,
-				NumSnakes:       45,
-				SnakeLength:     80,
-			}),
-			Layer: 0,
-		},
-		{
-			Label:    "snake fade out",
-			Offset:   offsets[2] - time.Second*5,
-			Duration: time.Second * 5,
-			Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-			Layer:    2,
-		},
-		{
-			Label:    "idle fade in",
-			Offset:   offsets[2],
-			Duration: time.Second * 5,
-			Effect:   effects.NewFadeTransition(effects.FADE_IN),
-			Layer:    2,
-		},
-		{
-			Label:    "idle",
-			Offset:   offsets[2],
-			Duration: offsets[3] - offsets[2],
-			Effect:   effects.NewMonocolour(golds[1]),
-			Layer:    0,
-		},
-		{
-			Label:    "idle sparkle",
-			Offset:   offsets[2],
-			Duration: offsets[3] - offsets[2],
-			Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
-			Layer:    1,
-		},
-		{
-			Label:    "idle fade out",
-			Offset:   offsets[3] - time.Second*5,
-			Duration: time.Second * 5,
-			Effect:   effects.NewFadeTransition(effects.FADE_OUT),
-			Layer:    2,
-		},
-		{
-			Label:    "segment in",
-			Offset:   offsets[3],
-			Duration: offsets[4] - offsets[3],
-			Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
-		},
-		{
-			Label:    "segment out",
-			Offset:   offsets[4],
-			Duration: offsets[5] - offsets[4],
-			Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
-		},
+		//{
+		//	Label:    "sparkle test",
+		//	Offset:   offsets[0],
+		//	Duration: offsets[1] - offsets[0],
+		//	Effect:   effects.NewSparkle(offsets[1]-offsets[0], time.Second*3, time.Second*3, golds[0]),
+		//},
+		//{
+		//	Label:    "snake fade in",
+		//	Offset:   offsets[1],
+		//	Duration: time.Second * 5,
+		//	Effect:   effects.NewFadeTransition(effects.FADE_IN),
+		//	Layer:    2,
+		//},
+		//{
+		//	Label:    "good snake settings",
+		//	Offset:   offsets[1],
+		//	Duration: offsets[2] - offsets[1],
+		//	Effect: effects.NewAvoidingSnake(&effects.AvoidingSnakeConfig{
+		//		Duration:        offsets[2] - offsets[1],
+		//		Palette:         golds,
+		//		Speed:           20,
+		//		RandomizeColors: true,
+		//		Head:            1,
+		//		NumSnakes:       45,
+		//		SnakeLength:     80,
+		//	}),
+		//	Layer: 0,
+		//},
+		//{
+		//	Label:    "snake fade out",
+		//	Offset:   offsets[2] - time.Second*5,
+		//	Duration: time.Second * 5,
+		//	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+		//	Layer:    2,
+		//},
+		//{
+		//	Label:    "idle fade in",
+		//	Offset:   offsets[2],
+		//	Duration: time.Second * 5,
+		//	Effect:   effects.NewFadeTransition(effects.FADE_IN),
+		//	Layer:    2,
+		//},
+		//{
+		//	Label:    "idle",
+		//	Offset:   offsets[2],
+		//	Duration: offsets[3] - offsets[2],
+		//	Effect:   effects.NewMonocolour(golds[1]),
+		//	Layer:    0,
+		//},
+		//{
+		//	Label:    "idle sparkle",
+		//	Offset:   offsets[2],
+		//	Duration: offsets[3] - offsets[2],
+		//	Effect:   effects.NewSparkle(20*time.Second, time.Second*3, time.Second*3, colorful.Color{255, 255, 255}),
+		//	Layer:    1,
+		//},
+		//{
+		//	Label:    "idle fade out",
+		//	Offset:   offsets[3] - time.Second*5,
+		//	Duration: time.Second * 5,
+		//	Effect:   effects.NewFadeTransition(effects.FADE_OUT),
+		//	Layer:    2,
+		//},
+		//{
+		//	Label:    "segment in",
+		//	Offset:   offsets[3],
+		//	Duration: offsets[4] - offsets[3],
+		//	Effect:   effects.NewSegment(&golds[0], effects.FADE_IN),
+		//},
+		//{
+		//	Label:    "segment out",
+		//	Offset:   offsets[4],
+		//	Duration: offsets[5] - offsets[4],
+		//	Effect:   effects.NewSegment(&golds[0], effects.FADE_OUT),
+		//},
 		// {
 		// 	Label:    "test flood fill",
 		// 	Offset:   time.Second,
@@ -370,7 +379,7 @@ func main() {
 	_ = testEffects
 
 	pipeline := []ledsim.Middleware{
-		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(mainEffects), getTimestamp),
+		ledsim.NewEffectsRunner(ledsim.NewEffectsManager(keyframes), getTimestamp),
 		ledsim.NewOutput(mirage),
 	}
 
@@ -390,23 +399,23 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	//pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
-	executor := ledsim.NewExecutor(sys, 30, pipeline...) // ledsim.TimingStats{},
+	executor := ledsim.NewExecutor(sys, frameRate, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 650*time.Second)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
 			if ctx.Err() != nil {
-				fmt.Println("emergency shutdown")
+				log.Println("emergency shutdown")
 				os.Exit(1)
 			}
 
-			fmt.Println("ctrl+c received, quitting...")
+			log.Println("ctrl+c received, quitting...")
 			if player != nil {
 				player.Close()
 			}
@@ -421,11 +430,44 @@ func main() {
 		}
 	}
 
-	fmt.Println("running")
+	log.Println("running")
+
+	go func() {
+		t := time.NewTicker(time.Millisecond * 500)
+		for {
+			select {
+			case <-t.C:
+				dur, err := player.GetTimestamp()
+				if err != nil {
+					continue
+				}
+
+				if dur >= 642*time.Second {
+					log.Println("reached end of file, quitting...")
+					cancel()
+					return
+				}
+			case <-ctx.Done():
+				t.Stop()
+				return
+			}
+		}
+	}()
 
 	err = executor.Run(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
-		fmt.Println("executor error:", err)
+		log.Println("executor error:", err)
 	}
-	fmt.Println("execution ended")
+	log.Println("execution ended")
+
+	// TODO: play grace period animation?
+
+	//log.Println("playing grace period animation")
+	//
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	//pipeline[0] = ledsim.NewEffectsRunner(ledsim.NewEffectsManager([]*ledsim.Keyframe{}), nil),
+	//
+	//	executor := ledsim.NewExecutor(sys, frameRate, pipeline...)
+	//err = executor.Run()
+
 }

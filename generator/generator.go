@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"ledsim"
 	"math/rand"
 	"regexp"
 	"strconv"
 	"time"
+
+	"ledsim"
 )
 
 type GeneratableEffect func(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe
@@ -32,14 +33,25 @@ type Timing struct {
 	FadeOut time.Duration
 }
 
+func randExcept(rng *rand.Rand, n, except int) int {
+	v := rng.Intn(n)
+	if v == except {
+		return randExcept(rng, n, except)
+	}
+
+	return v
+}
+
 func (g *Generator) Generate(timings []*Timing, seed int64) []*ledsim.Keyframe {
 	rng := rand.New(rand.NewSource(seed))
 
 	var keyframes []*ledsim.Keyframe
+	lastEffect := -1
 
 	for _, timing := range timings {
 		// pick a random effect
-		effect := g.effects[rng.Intn(len(g.effects))](timing.FadeIn, timing.Effect, timing.FadeOut, rng)
+		lastEffect = randExcept(rng, len(g.effects), lastEffect)
+		effect := g.effects[lastEffect](timing.FadeIn, timing.Effect, timing.FadeOut, rng)
 
 		for _, keyframe := range effect {
 			keyframe.Offset += timing.Offset

@@ -1,13 +1,14 @@
 package effects
 
 import (
-	"ledsim"
 	"math"
+	"math/rand"
 	"sort"
 	"time"
 
-	"math/rand"
+	"ledsim"
 
+	"github.com/google/uuid"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -274,3 +275,37 @@ func (s *AvoidingSnake) OnExit(sys *ledsim.System) {
 }
 
 var _ ledsim.Effect = (*AvoidingSnake)(nil)
+
+func AvoidingSnakeGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
+	return []*ledsim.Keyframe{
+		{
+			Label:    "AvoidingSnake_FadeIn_" + uuid.New().String(),
+			Offset:   0,
+			Duration: fadeIn,
+			Effect:   NewFadeTransition(FADE_IN),
+			Layer:    2,
+		},
+		{
+			Label:    "AvoidingSnake_Main_" + uuid.New().String(),
+			Offset:   fadeIn,
+			Duration: fadeIn + fadeOut + effect,
+			Effect: NewAvoidingSnake(&AvoidingSnakeConfig{
+				Duration:        fadeIn + fadeOut + effect,
+				Palette:         Golds,
+				Speed:           20,
+				RandomizeColors: true,
+				Head:            1,
+				NumSnakes:       45,
+				SnakeLength:     80,
+			}),
+			Layer: 1,
+		},
+		{
+			Label:    "AvoidingSnake_FadeOut_" + uuid.New().String(),
+			Offset:   fadeIn + effect,
+			Duration: fadeOut,
+			Effect:   NewFadeTransition(FADE_OUT),
+			Layer:    2,
+		},
+	}
+}

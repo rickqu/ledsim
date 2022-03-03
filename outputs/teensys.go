@@ -1,11 +1,12 @@
 package outputs
 
 import (
-	"ledsim"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
+
+	"ledsim"
 
 	"github.com/labstack/echo/v4"
 )
@@ -16,7 +17,7 @@ type udpOutput struct {
 }
 
 const TARGET_PORT = 5151
-const SERVER_PORT = 1200
+const SERVER_PORT = 900
 
 type TeensyNetwork struct {
 	outputConn *net.UDPConn
