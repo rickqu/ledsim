@@ -436,27 +436,29 @@ func main() {
 
 	log.Println("running")
 
-	go func() {
-		t := time.NewTicker(time.Millisecond * 500)
-		for {
-			select {
-			case <-t.C:
-				dur, err := player.GetTimestamp()
-				if err != nil {
-					continue
-				}
+	if player != nil {
+		go func() {
+			t := time.NewTicker(time.Millisecond * 500)
+			for {
+				select {
+				case <-t.C:
+					dur, err := player.GetTimestamp()
+					if err != nil {
+						continue
+					}
 
-				if dur >= 642*time.Second {
-					log.Println("reached end of file, quitting...")
-					cancel()
+					if dur >= 642*time.Second {
+						log.Println("reached end of file, quitting...")
+						cancel()
+						return
+					}
+				case <-ctx.Done():
+					t.Stop()
 					return
 				}
-			case <-ctx.Done():
-				t.Stop()
-				return
 			}
-		}
-	}()
+		}()
+	}
 
 	err = executor.Run(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
