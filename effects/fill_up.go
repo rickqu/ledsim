@@ -72,11 +72,10 @@ func (s *FillUp) OnExit(sys *ledsim.System) {
 
 var _ ledsim.Effect = (*FillUp)(nil)
 
-
 func FillUpGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
 	totalTime := fadeIn + effect + fadeOut
 	// target each fade to be about 7.5 seconds
-	repeats := math.Round(float64(totalTime) / float64(time.Millisecond*7500))
+	repeats := math.Round(float64(totalTime) / float64(StandardPeriod))
 	playTime := time.Duration(float64(totalTime) / repeats)
 
 	var keyframes []*ledsim.Keyframe
@@ -109,8 +108,8 @@ func FillUpGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*l
 				Label:    "FillUp_Main_" + strconv.Itoa(i) + "_" + uuid.New().String(),
 				Offset:   time.Duration(i) * playTime,
 				Duration: playTime,
-				Effect: NewFillUp(upDuration, downDuration, 0.2, col),
-				Layer: 1,
+				Effect:   NewFillUp(upDuration, downDuration, 0.2, col),
+				Layer:    1,
 			},
 		)
 	}

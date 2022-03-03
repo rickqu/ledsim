@@ -1,6 +1,12 @@
 package effects
 
-import "github.com/lucasb-eyer/go-colorful"
+import (
+	"time"
+
+	"github.com/lucasb-eyer/go-colorful"
+)
+
+const StandardPeriod = 12800 * time.Millisecond
 
 var Golds = []colorful.Color{
 	// {255, 255, 0},
@@ -8,7 +14,7 @@ var Golds = []colorful.Color{
 	// {207, 181, 59},
 	// {197, 179, 88},
 	{250 / 255.0, 130 / 255.0, 0},
-	{250 / 255.0 / 10, 130 / 255.0 / 10, 0},
+	// {250 / 255.0 / 10, 130 / 255.0 / 10, 0},
 	// {153, 101, 21},
 	// {244, 163, 0},
 }

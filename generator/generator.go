@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"reflect"
 	"regexp"
 	"strconv"
 	"time"
@@ -33,31 +34,45 @@ type Timing struct {
 	FadeOut time.Duration
 }
 
-func randExcept(rng *rand.Rand, n, except int) int {
-	v := rng.Intn(n)
-	if v == except {
-		return randExcept(rng, n, except)
-	}
-
-	return v
-}
-
 func (g *Generator) Generate(timings []*Timing, seed int64) []*ledsim.Keyframe {
 	rng := rand.New(rand.NewSource(seed))
 
 	var keyframes []*ledsim.Keyframe
-	lastEffect := -1
+
+	rng.Shuffle(len(g.effects), func(i, j int) {
+		g.effects[i], g.effects[j] = g.effects[j], g.effects[i]
+	})
+
+	i := 0
 
 	for _, timing := range timings {
 		// pick a random effect
-		lastEffect = randExcept(rng, len(g.effects), lastEffect)
-		effect := g.effects[lastEffect](timing.FadeIn, timing.Effect, timing.FadeOut, rng)
+		effect := g.effects[i](timing.FadeIn, timing.Effect, timing.FadeOut, rng)
 
 		for _, keyframe := range effect {
 			keyframe.Offset += timing.Offset
 		}
 
 		keyframes = append(keyframes, effect...)
+
+		i++
+
+		if i >= len(g.effects) {
+			i = 0
+			lastLast := reflect.ValueOf(g.effects[len(g.effects)-1]).Pointer()
+
+			for {
+				rng.Shuffle(len(g.effects), func(i, j int) {
+					g.effects[i], g.effects[j] = g.effects[j], g.effects[i]
+				})
+
+				first := reflect.ValueOf(g.effects[0]).Pointer()
+
+				if first != lastLast {
+					break
+				}
+			}
+		}
 	}
 
 	return keyframes

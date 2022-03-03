@@ -129,8 +129,7 @@ func (s *Segment) OnExit(sys *ledsim.System) {
 
 func SegmentGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
 	totalTime := fadeIn + effect + fadeOut
-	// target each fade to be about 15 seconds
-	repeats := math.Round(float64(totalTime) / float64(15 * time.Second))
+	repeats := math.Round(float64(totalTime) / float64(StandardPeriod))
 	playTime := time.Duration(float64(totalTime) / repeats)
 
 	var keyframes []*ledsim.Keyframe

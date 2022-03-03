@@ -287,7 +287,7 @@ func AvoidingSnakeGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Ran
 		},
 		{
 			Label:    "AvoidingSnake_Main_" + uuid.New().String(),
-			Offset:   fadeIn,
+			Offset:   0,
 			Duration: fadeIn + fadeOut + effect,
 			Effect: NewAvoidingSnake(&AvoidingSnakeConfig{
 				Duration:        fadeIn + fadeOut + effect,

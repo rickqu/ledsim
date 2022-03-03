@@ -48,8 +48,8 @@ func (p *Pulse) Eval(progress float64, sys *ledsim.System) {
 		lumin = p.EaseFunc(remainder / p.UpDur.Seconds())
 	} else if remainder < (p.UpDur + p.HiDur).Seconds() {
 		lumin = 1
-	} else if remainder < (p.UpDur + p.HiDur + p.LoDur).Seconds() {
-		lumin = 1 - p.EaseFunc((remainder-(p.UpDur+p.HiDur).Seconds())/p.LoDur.Seconds())
+	} else if remainder < (p.UpDur + p.HiDur + p.DownDur).Seconds() {
+		lumin = 1 - p.EaseFunc((remainder-(p.UpDur+p.HiDur).Seconds())/p.DownDur.Seconds())
 	} else {
 		lumin = 0
 	}
@@ -71,11 +71,11 @@ func (p *Pulse) Eval(progress float64, sys *ledsim.System) {
 
 func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
 	totalTime := fadeIn + effect + fadeOut
-	// target each fade to be about 15 seconds
-	repeats := math.Round(float64(totalTime) / float64(15 * time.Second))
+	repeats := math.Round(float64(totalTime) / float64(StandardPeriod/2))
 	playTime := time.Duration(float64(totalTime) / repeats)
 
 	var keyframes []*ledsim.Keyframe
+	col := Golds[rng.Intn(len(Golds))]
 
 	keyframes = append(keyframes,
 		&ledsim.Keyframe{
@@ -95,8 +95,6 @@ func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*le
 	)
 
 	for i := 0; i < int(repeats); i++ {
-		col := Golds[rng.Intn(len(Golds))]
-
 		keyframes = append(keyframes,
 			&ledsim.Keyframe{
 				Label:    "Pulse_Main_" + strconv.Itoa(i) + "_" + uuid.New().String(),
@@ -107,11 +105,11 @@ func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*le
 					BaseBright:  0.2,
 					MaxBright:   0.8,
 					TargetColor: col,
-					LoDur:       time.Duration(float64(playTime) * 0.25),
-					HiDur:       time.Duration(float64(playTime) * 0.25),
-					UpDur:       time.Duration(float64(playTime) * 0.25),
-					DownDur:     time.Duration(float64(playTime) * 0.25),
-					EaseFunc:    ease.InCubic,
+					LoDur:       0,
+					HiDur:       0,
+					UpDur:       playTime / 2,
+					DownDur:     playTime / 2,
+					EaseFunc:    ease.InOutCubic,
 				},
 				Layer: 1,
 			},

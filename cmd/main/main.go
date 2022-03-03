@@ -23,7 +23,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-const frameRate = 30
+const frameRate = 10
 
 func main() {
 	sys := ledsim.NewSystem()
@@ -98,7 +98,6 @@ func main() {
 		// {207, 181, 59},
 		// {197, 179, 88},
 		{250, 130, 0},
-		{250 / 10, 130 / 10, 0},
 		// {153, 101, 21},
 		// {244, 163, 0},
 	}
@@ -371,7 +370,7 @@ func main() {
 			Label:    "fill up test",
 			Offset:   time.Second * 5,
 			Duration: time.Second * 5,
-			Effect:   effects.NewFillUp(time.Second*4, time.Second, 0.1, golds[1]),
+			Effect:   effects.NewFillUp(time.Second*4, time.Second, 0.1, golds[0]),
 		},
 	}
 
@@ -399,12 +398,17 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	//pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
 	executor := ledsim.NewExecutor(sys, frameRate, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
 
-	ctx, cancel := context.WithTimeout(context.Background(), 650*time.Second)
+	timeout := 650 * time.Second
+	if player == nil {
+		timeout = 643 * time.Second
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
