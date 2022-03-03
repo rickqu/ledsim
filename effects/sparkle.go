@@ -91,7 +91,7 @@ func SparkleGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*
 			Label:    "Sparkle_Main_" + uuid.New().String(),
 			Offset:   0,
 			Duration: fadeIn + fadeOut + effect,
-			Effect: NewSparkle(fadeIn+fadeOut+effect, 5*time.Second, 3*time.Second,
+			Effect: NewSparkle(fadeIn+fadeOut+effect, 2*time.Second, 1500*time.Millisecond,
 				func() colorful.Color {
 					return Golds[rand.Intn(len(Golds))]
 				}),

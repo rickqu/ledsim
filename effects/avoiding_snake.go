@@ -256,17 +256,23 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 
 	for i := len(a.comps) - a.head; i >= 0; i-- {
 		led := a.comps[i]
-		if i == len(a.comps)-a.head {
-			// the head
-			led.Color = ledsim.BlendRgb(led.Color, a.color, (frac / 2))
-			continue
-		} else if i == 0 {
+		// if i == len(a.comps)-a.head {
+		// 	// the head
+		// 	led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, (frac / 2))
+		// 	continue
+		// } else
+		if i == 0 {
 			// the tail
-			led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5-(frac/2))
+			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5-(frac/2))
 			continue
 		}
 
-		led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5)
+		distFromHead := (len(a.comps) - a.head - i)
+		if distFromHead <= 10 {
+			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 1-(float64(distFromHead)/20.0))
+		}
+
+		led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5)
 	}
 }
 
@@ -295,8 +301,8 @@ func AvoidingSnakeGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Ran
 				Speed:           20,
 				RandomizeColors: true,
 				Head:            1,
-				NumSnakes:       45,
-				SnakeLength:     80,
+				NumSnakes:       25,
+				SnakeLength:     70,
 			}),
 			Layer: 1,
 		},

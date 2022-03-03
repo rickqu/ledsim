@@ -354,24 +354,24 @@ func main() {
 	_ = mainEffects
 
 	testEffects := []*ledsim.Keyframe{
-		{
-			Label:    "background",
-			Offset:   0,
-			Duration: time.Second * 10,
-			Effect:   effects.NewMonocolour(colorful.Color{0, 0, 0}),
-		},
+		// {
+		// 	Label:    "background",
+		// 	Offset:   0,
+		// 	Duration: time.Second * 10,
+		// 	Effect:   effects.NewMonocolour(colorful.Color{0, 0, 0}),
+		// },
 		// {
 		// 	Label:    "sparkle test",
 		// 	Offset:   0,
 		// 	Duration: time.Second * 5,
 		// 	Effect:   effects.NewSparkle(time.Second*5, time.Second*3, time.Second*3, golds[0]),
 		// },
-		{
-			Label:    "fill up test",
-			Offset:   time.Second * 5,
-			Duration: time.Second * 5,
-			Effect:   effects.NewFillUp(time.Second*4, time.Second, 0.1, golds[0]),
-		},
+		// {
+		// 	Label:    "fill up test",
+		// 	Offset:   time.Second * 5,
+		// 	Duration: time.Second * 5,
+		// 	Effect:   effects.NewFillUp(time.Second*4, time.Second, 0.1, golds[0]),
+		// },
 	}
 
 	_ = mainEffects
