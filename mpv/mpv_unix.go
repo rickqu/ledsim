@@ -15,7 +15,7 @@ func connect() (net.Conn, error) {
 }
 
 func runMPV(pathToFile string, mpvArg string, debug bool) (*exec.Cmd, error) {
-	cmd := exec.Command("mpv", pathToFile, mpvArg, `--no-video`, `--input-ipc-server=/tmp/ledsimsocket`, `--pause`)
+	cmd := exec.Command("mpv", mpvArg, pathToFile, `--no-video`, `--input-ipc-server=/tmp/ledsimsocket`, `--pause`)
 
 	if debug {
 		cmd.Stdout = os.Stdout
