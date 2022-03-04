@@ -45,7 +45,7 @@ func (s *Sparkle) Eval(progress float64, sys *ledsim.System) {
 	t := time.Duration(progress * float64(s.duration))
 
 	// each LED period is composed of 4 phases.
-	for i := 0; i < len(sys.LEDs); i += 3 {
+	for i := 0; i < len(sys.LEDs); i += 2 {
 		led := sys.LEDs[i]
 		t := t - s.delay[i]
 		if t < 0 {

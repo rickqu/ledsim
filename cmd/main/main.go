@@ -33,10 +33,10 @@ func main() {
 	var err error
 	if len(os.Args) >= 2 {
 		player, err = mpv.NewPlayer(os.Args[1], len(os.Args) >= 3)
-		defer player.Close()
 		if err != nil {
 			panic(err)
 		}
+		defer player.Close()
 	} else {
 		log.Println("warn: running without audio/mpv")
 	}
