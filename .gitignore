@@ -1,3 +1,4 @@
 *.exe
 cpu.prof
 .DS_Store
+.idea

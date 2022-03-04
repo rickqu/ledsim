@@ -162,6 +162,7 @@ func (r *EffectsManager) enterAnimation(keyframe *Keyframe, system *System) {
 			r.blacklist[keyframe] = true
 		}
 	}()
+	log.Println("entering:", keyframe.Label)
 	keyframe.Effect.OnEnter(system)
 }
 
@@ -186,6 +187,7 @@ func (r *EffectsManager) exitAnimations(keyframe *Keyframe, system *System) {
 				keyframe.Label, rec, string(debug.Stack()))
 		}
 	}()
+	log.Println("exiting:", keyframe.Label)
 	keyframe.Effect.OnExit(system)
 }
 
