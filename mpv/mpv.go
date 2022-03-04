@@ -31,8 +31,8 @@ type Player struct {
 }
 
 // NewPlayer returns a new player with the given path.
-func NewPlayer(pathToFile string, debug bool) (*Player, error) {
-	cmd, err := runMPV(pathToFile, debug)
+func NewPlayer(pathToFile string, arg string, debug bool) (*Player, error) {
+	cmd, err := runMPV(pathToFile, arg, debug)
 	if err != nil {
 		return nil, err
 	}
@@ -175,28 +175,28 @@ func (p *Player) Close() error {
 }
 
 func (p *Player) Play() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 	_, err := p.Command(ctx, "set_property", "pause", false)
 	return err
 }
 
 func (p *Player) Pause() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 	_, err := p.Command(ctx, "set_property", "pause", true)
 	return err
 }
 
 func (p *Player) SeekTo(t time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 	_, err := p.Command(ctx, "set_property", "playback-time", t.Seconds())
 	return err
 }
 
 func (p *Player) GetTimestamp() (time.Duration, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond * 100)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
 	defer cancel()
 	current, err := p.CommandFloat64(ctx, "get_property", "playback-time")
 	if err != nil {

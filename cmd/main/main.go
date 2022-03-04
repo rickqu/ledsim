@@ -32,7 +32,7 @@ func main() {
 	var player *mpv.Player
 	var err error
 	if len(os.Args) >= 2 {
-		player, err = mpv.NewPlayer(os.Args[1], len(os.Args) >= 3)
+		player, err = mpv.NewPlayer(os.Args[1], os.Getenv("MPV_ARGS"), len(os.Args) >= 3)
 		if err != nil {
 			panic(err)
 		}

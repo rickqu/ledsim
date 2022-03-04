@@ -12,8 +12,8 @@ func connect() (net.Conn, error) {
 	return winio.DialPipe(`\\.\pipe\ledsimsocket`, nil)
 }
 
-func runMPV(pathToFile string, debug bool) (*exec.Cmd, error) {
-	cmd := exec.Command("mpv.exe", pathToFile, `--no-video`, `--input-ipc-server=\\.\pipe\ledsimsocket`, `--pause`)
+func runMPV(pathToFile string, mpvArg string, debug bool) (*exec.Cmd, error) {
+	cmd := exec.Command("mpv.exe", pathToFile, mpvArg, `--no-video`, `--input-ipc-server=\\.\pipe\ledsimsocket`, `--pause`)
 
 	if debug {
 		cmd.Stdout = os.Stdout
