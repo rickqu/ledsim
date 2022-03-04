@@ -50,6 +50,7 @@ func main() {
 	gen := generator.NewGenerator([]generator.GeneratableEffect{
 		effects.AvoidingSnakeGenerator,
 		effects.SparkleGenerator,
+		effects.ColourShiftGenerator,
 		effects.SegmentGenerator,
 		effects.PulseGenerator,
 		effects.FillUpGenerator,
