@@ -47,11 +47,11 @@ func main() {
 	}
 
 	gen := generator.NewGenerator([]generator.GeneratableEffect{
-		// effects.AvoidingSnakeGenerator,
+		effects.AvoidingSnakeGenerator,
 		effects.SparkleGenerator,
 		effects.SegmentGenerator,
-		// effects.PulseGenerator,
-		// effects.FillUpGenerator,
+		effects.PulseGenerator,
+		effects.FillUpGenerator,
 	})
 	keyframes := gen.Generate(timings, time.Now().UnixNano()) // generate some effects
 
