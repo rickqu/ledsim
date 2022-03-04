@@ -15,7 +15,6 @@ import (
 	"ledsim/control_panel"
 	"ledsim/effects"
 	"ledsim/generator"
-	"ledsim/metrics"
 	"ledsim/mpv"
 	"ledsim/outputs"
 
@@ -84,7 +83,7 @@ func main() {
 	})
 
 	control_panel.InitControlPanel(e)
-	metrics.StartMetrics()
+	// metrics.StartMetrics()
 
 	mirage := outputs.NewMirage(e)
 
