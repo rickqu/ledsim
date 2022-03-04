@@ -47,11 +47,11 @@ func main() {
 	}
 
 	gen := generator.NewGenerator([]generator.GeneratableEffect{
-		effects.AvoidingSnakeGenerator,
+		// effects.AvoidingSnakeGenerator,
 		effects.SparkleGenerator,
 		effects.SegmentGenerator,
-		effects.PulseGenerator,
-		effects.FillUpGenerator,
+		// effects.PulseGenerator,
+		// effects.FillUpGenerator,
 	})
 	keyframes := gen.Generate(timings, time.Now().UnixNano()) // generate some effects
 
@@ -399,7 +399,7 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	// pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
 	executor := ledsim.NewExecutor(sys, frameRate, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
