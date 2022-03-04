@@ -1,10 +1,15 @@
 package effects
 
 import (
-	"ledsim"
 	"math"
+	"math/rand"
+	"strconv"
 	"time"
 
+	"ledsim"
+
+	"github.com/fogleman/ease"
+	"github.com/google/uuid"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -43,8 +48,8 @@ func (p *Pulse) Eval(progress float64, sys *ledsim.System) {
 		lumin = p.EaseFunc(remainder / p.UpDur.Seconds())
 	} else if remainder < (p.UpDur + p.HiDur).Seconds() {
 		lumin = 1
-	} else if remainder < (p.UpDur + p.HiDur + p.LoDur).Seconds() {
-		lumin = 1 - p.EaseFunc((remainder-(p.UpDur+p.HiDur).Seconds())/p.LoDur.Seconds())
+	} else if remainder < (p.UpDur + p.HiDur + p.DownDur).Seconds() {
+		lumin = 1 - p.EaseFunc((remainder-(p.UpDur+p.HiDur).Seconds())/p.DownDur.Seconds())
 	} else {
 		lumin = 0
 	}
@@ -62,4 +67,54 @@ func (p *Pulse) Eval(progress float64, sys *ledsim.System) {
 
 	// fmt.Println(p.wave(t))
 
+}
+
+func PulseGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
+	totalTime := fadeIn + effect + fadeOut
+	repeats := math.Round(float64(totalTime) / float64(StandardPeriod/3))
+	playTime := time.Duration(float64(totalTime) / repeats)
+
+	var keyframes []*ledsim.Keyframe
+	col := Golds[rng.Intn(len(Golds))]
+
+	keyframes = append(keyframes,
+		&ledsim.Keyframe{
+			Label:    "Pulse_FadeIn_" + uuid.New().String(),
+			Offset:   0,
+			Duration: fadeIn,
+			Effect:   NewFadeTransition(FADE_IN),
+			Layer:    2,
+		},
+		&ledsim.Keyframe{
+			Label:    "Pulse_FadeOut_" + uuid.New().String(),
+			Offset:   fadeIn + effect,
+			Duration: fadeOut,
+			Effect:   NewFadeTransition(FADE_OUT),
+			Layer:    2,
+		},
+	)
+
+	for i := 0; i < int(repeats); i++ {
+		keyframes = append(keyframes,
+			&ledsim.Keyframe{
+				Label:    "Pulse_Main_" + strconv.Itoa(i) + "_" + uuid.New().String(),
+				Offset:   time.Duration(i) * playTime,
+				Duration: playTime,
+				Effect: &Pulse{
+					Dur:         playTime,
+					BaseBright:  0.05,
+					MaxBright:   0.9,
+					TargetColor: col,
+					LoDur:       0,
+					HiDur:       0,
+					UpDur:       playTime / 2,
+					DownDur:     playTime / 2,
+					EaseFunc:    ease.InOutCubic,
+				},
+				Layer: 1,
+			},
+		)
+	}
+
+	return keyframes
 }

@@ -22,7 +22,7 @@ func runHeartbeat() {
 	prometheus.MustRegister(heartbeatMetric)
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		log.Fatal(http.ListenAndServe(":80", nil))
+		log.Fatal(http.ListenAndServe(":4242", nil))
 	}()
 	for {
 		if heartbeat {

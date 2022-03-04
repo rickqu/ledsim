@@ -18,4 +18,10 @@ var (
 	BlendRgb Blending = func(from colorful.Color, to colorful.Color, t float64) colorful.Color {
 		return from.BlendRgb(to, t)
 	}
+	BlendAdditiveRgb Blending = func(from colorful.Color, to colorful.Color, t float64) colorful.Color {
+		from.R += to.R * t
+		from.G += to.G * t
+		from.B += to.B * t
+		return from.Clamped()
+	}
 )

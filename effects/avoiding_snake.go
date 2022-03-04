@@ -1,13 +1,14 @@
 package effects
 
 import (
-	"ledsim"
 	"math"
+	"math/rand"
 	"sort"
 	"time"
 
-	"math/rand"
+	"ledsim"
 
+	"github.com/google/uuid"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -241,6 +242,7 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 
 	// move the snake
 	intMov, frac := math.Modf(movement)
+	_ = frac
 	for i := 0; i < int(intMov)-a.curMove; i++ {
 		if !a.step(sys, m) {
 			// reverse direction yolo
@@ -255,17 +257,28 @@ func (a *AvoidingSnakeInstance) eval(progress float64, sys *ledsim.System, m *Sc
 
 	for i := len(a.comps) - a.head; i >= 0; i-- {
 		led := a.comps[i]
-		if i == len(a.comps)-a.head {
-			// the head
-			led.Color = ledsim.BlendRgb(led.Color, a.color, (frac / 2))
-			continue
-		} else if i == 0 {
-			// the tail
-			led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5-(frac/2))
-			continue
+		// if i == len(a.comps)-a.head {
+		// 	// the head
+		// 	led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, (frac / 2))
+		// 	continue
+		// } else
+		// if i == 0 {
+		// 	// the tail
+		// 	led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5-(frac/2))
+		// 	continue
+		// }
+
+		distFromHead := (len(a.comps) - a.head - i)
+		if distFromHead <= 10 {
+			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 1-(float64(distFromHead)/20.0))
 		}
 
-		led.Color = ledsim.BlendRgb(led.Color, a.color, 0.5)
+		distFromTail := i
+		if distFromTail <= 10 {
+			led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, (float64(distFromTail) / 20.0))
+		}
+
+		led.Color = ledsim.BlendAdditiveRgb(led.Color, a.color, 0.5)
 	}
 }
 
@@ -274,3 +287,39 @@ func (s *AvoidingSnake) OnExit(sys *ledsim.System) {
 }
 
 var _ ledsim.Effect = (*AvoidingSnake)(nil)
+
+func AvoidingSnakeGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*ledsim.Keyframe {
+	return []*ledsim.Keyframe{
+		{
+			Label:    "AvoidingSnake_FadeIn_" + uuid.New().String(),
+			Offset:   0,
+			Duration: fadeIn,
+			Effect:   NewFadeTransition(FADE_IN),
+			Layer:    2,
+		},
+		{
+			Label:    "AvoidingSnake_Main_" + uuid.New().String(),
+			Offset:   0,
+			Duration: fadeIn + fadeOut + effect,
+			Effect: NewAvoidingSnake(&AvoidingSnakeConfig{
+				Duration: fadeIn + fadeOut + effect,
+				Palette: []colorful.Color{
+					Golds[rng.Intn(len(Golds))],
+				},
+				Speed:           20,
+				RandomizeColors: true,
+				Head:            1,
+				NumSnakes:       25,
+				SnakeLength:     70,
+			}),
+			Layer: 1,
+		},
+		{
+			Label:    "AvoidingSnake_FadeOut_" + uuid.New().String(),
+			Offset:   fadeIn + effect,
+			Duration: fadeOut,
+			Effect:   NewFadeTransition(FADE_OUT),
+			Layer:    2,
+		},
+	}
+}

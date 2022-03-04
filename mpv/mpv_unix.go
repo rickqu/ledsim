@@ -1,3 +1,4 @@
+//go:build darwin || linux
 // +build darwin linux
 
 package mpv
@@ -13,8 +14,8 @@ func connect() (net.Conn, error) {
 	return net.DialTimeout("unix", "/tmp/ledsimsocket", time.Second)
 }
 
-func runMPV(pathToFile string, debug bool) (*exec.Cmd, error) {
-	cmd := exec.Command("mpv", pathToFile, `--no-video`, `--input-ipc-server=/tmp/ledsimsocket`, `--pause`)
+func runMPV(pathToFile string, mpvArg string, debug bool) (*exec.Cmd, error) {
+	cmd := exec.Command("mpv", mpvArg, pathToFile, `--no-video`, `--input-ipc-server=/tmp/ledsimsocket`, `--pause`)
 
 	if debug {
 		cmd.Stdout = os.Stdout

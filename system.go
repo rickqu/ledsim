@@ -1,10 +1,14 @@
 package ledsim
 
 import (
+	_ "embed"
 	"sync"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
+
+//go:embed timings.txt
+var TimingData []byte
 
 type System struct {
 	LEDs    []*LED

@@ -1,11 +1,12 @@
 package outputs
 
 import (
-	"ledsim"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
+
+	"ledsim"
 
 	"github.com/labstack/echo/v4"
 )
