@@ -24,7 +24,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-const frameRate = 10
+const frameRate = 30
 
 func main() {
 	sys := ledsim.NewSystem()
