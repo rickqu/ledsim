@@ -116,7 +116,7 @@ func SegmentGenerator(fadeIn, effect, fadeOut time.Duration, rng *rand.Rand) []*
 			Label:    "Segment_Main_" + uuid.New().String(),
 			Offset:   0,
 			Duration: fadeIn + fadeOut + effect,
-			Effect: NewSegment(fadeIn+fadeOut+effect, 2*time.Second, 1500*time.Millisecond,
+			Effect: NewSegment(fadeIn+fadeOut+effect, 1*time.Second, 750*time.Millisecond,
 				func() colorful.Color {
 					return gold
 				}),
