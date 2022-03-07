@@ -401,7 +401,7 @@ func main() {
 	// }
 
 	// pipeline = append(pipeline, ledsim.NewOutput(udpOutput))
-	// pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
+	pipeline = append(pipeline, ledsim.NewOutput(outputs.NewTeensyNetwork(e, sys)))
 
 	executor := ledsim.NewExecutor(sys, frameRate, pipeline...) // ledsim.TimingStats{},
 	// ledsim.StallCheck{},
